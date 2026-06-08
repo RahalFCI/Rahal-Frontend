@@ -1,0 +1,224 @@
+{
+  "info": {
+    "name": "Rahal API — Explorer Auth",
+    "_postman_id": "rahal-auth-phase1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Phase 1 auth endpoints for the Rahal Explorer mobile app. Register uses multipart/form-data."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:7145/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "explorer@test.com",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Explorer Auth",
+      "item": [
+        {
+          "name": "Register Explorer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/explorer/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["explorer", "register"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "Name", "value": "Test Explorer", "type": "text" },
+                { "key": "Email", "value": "{{email}}", "type": "text" },
+                { "key": "Password", "value": "Test@1234", "type": "text" },
+                { "key": "ConfirmPassword", "value": "Test@1234", "type": "text" },
+                { "key": "PhoneNumber", "value": "+201234567890", "type": "text" },
+                { "key": "BirthDate", "value": "2000-01-15", "type": "text" },
+                { "key": "Gender", "value": "1", "type": "text" },
+                { "key": "Bio", "value": "Love exploring new places", "type": "text" },
+                { "key": "CountryCode", "value": "EG", "type": "text" },
+                { "key": "IsPublic", "value": "true", "type": "text" },
+                {
+                  "key": "profilePicture",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.isSuccess && json.data) {",
+                  "    pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Explorer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/explorer/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["explorer", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"Test@1234\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.isSuccess && json.data) {",
+                  "    pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Tokens (backend follow-up needed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "generate"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accessToken\": \"{{accessToken}}\",\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "description": "Current backend endpoint is authorized, so true expired-access-token refresh is blocked until backend is adjusted."
+          }
+        },
+        {
+          "name": "Logout Explorer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/explorer/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["explorer", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Email Verification",
+      "item": [
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/emailverification/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["emailverification", "verify-email"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"otp\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Resend Verification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/emailverification/resend-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["emailverification", "resend-verification"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Password Recovery",
+      "item": [
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forgot-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewTest@1234\",\n  \"confirmPassword\": \"NewTest@1234\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

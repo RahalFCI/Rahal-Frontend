@@ -1,0 +1,30 @@
+{
+  "screen": {
+    "discover": {
+      "title": "Discover"
+    }
+  },
+  "map": {
+    "allCategories": "All",
+    "searchPlaceholder": "Search the Citadel, Giza, or Old Cairo...",
+    "searchAction": "Open place search",
+    "newDiscovery": "NEW DISCOVERY",
+    "xpReward": "+250 XP",
+    "loadingPlaces": "Finding places near you...",
+    "noPlacesNearby": "No places found nearby",
+    "noPlacesNearbyHint": "Move the map or clear the category filter.",
+    "locationFallback": "Showing catalogued places. Enable location for nearby discovery.",
+    "errorLoading": "Could not load places",
+    "level": "LVL {{level}}",
+    "openPlace": "Open place details",
+    "recenter": "Recenter map",
+    "providerUnavailable": "Vector map unavailable",
+    "providerUnavailableHint": "Build a custom Expo dev client to load Mapbox native code. Places data can still load while the map provider is unavailable."
+  },
+  "error": {
+    "alreadyCheckedIn": "This place is already in your journal.",
+    "userNotAtLocation": "Move closer to the place before checking in.",
+    "impossibleTravel": "This check-in was blocked by the location audit.",
+    "locationSpoofingDetected": "This check-in was blocked because the location could not be trusted."
+  }
+}

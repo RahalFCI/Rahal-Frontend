@@ -1,0 +1,111 @@
+{
+  "app": {
+    "name": "Rahal"
+  },
+  "tabs": {
+    "discover": "Discover",
+    "journal": "Journal",
+    "rewards": "Rewards",
+    "profile": "Profile"
+  },
+  "placeholder": {
+    "comingSoon": "Coming soon"
+  },
+  "action": {
+    "close": "Close",
+    "done": "Done",
+    "dismissError": "Dismiss error"
+  },
+  "picker": {
+    "countryTitle": "Select Country",
+    "countrySearch": "Search countries..."
+  },
+  "profile": {
+    "totalXp": "TOTAL XP",
+    "visited": "VISITED",
+    "streak": "CURRENT STREAK",
+    "streakUnit": "Days",
+    "badges": "Explorer Badges",
+    "badgeViewAll": "View All",
+    "recentActivity": "Recent Activity",
+    "levelProgress": "LEVEL {{level}} PROGRESS",
+    "lockedBadge": "LOCKED",
+    "logout": "Sign Out",
+    "loading": "Loading profile...",
+    "errorLoad": "Could not load profile.",
+    "retry": "Retry",
+    "premium": "PREMIUM",
+    "explorer": "EXPLORER",
+    "joined": "JOINED",
+    "editProfile": "Edit Profile",
+    "edit": "Edit",
+    "setupTitle": "Complete your Explorer profile",
+    "setupBody": "Add your public Explorer details before viewing profile stats and activity.",
+    "completeProfile": "Complete Profile"
+  },
+  "editProfile": {
+    "title": "Edit Profile",
+    "sectionInfo": "Profile Information",
+    "sectionSetup": "Complete Explorer Profile",
+    "sectionPassword": "Change Password",
+    "nameLabel": "Full Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "explorer@rahal.app",
+    "phoneLabel": "Phone Number",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "countryLabel": "Country",
+    "genderLabel": "Gender",
+    "birthDateLabel": "Birth Date",
+    "isPublicLabel": "Public Profile",
+    "isPublicDescription": "Allow other explorers to see your profile",
+    "profilePictureLabel": "Profile Picture",
+    "profilePictureAction": "Choose a new image",
+    "profilePictureChange": "Change image",
+    "profilePictureHelper": "JPG, PNG, GIF, or WebP up to 5 MB.",
+    "profilePicturePermissionDenied": "Photo permission was not granted.",
+    "oldPasswordLabel": "Current Password",
+    "oldPasswordPlaceholder": "Your current password",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Min 8 chars, uppercase, lowercase, digit, symbol",
+    "confirmPasswordLabel": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "saveChanges": "Save Changes",
+    "completeProfile": "Complete Profile",
+    "changePassword": "Update Password",
+    "successToast": "Profile updated successfully.",
+    "createSuccessToast": "Explorer profile created successfully.",
+    "passwordSuccessToast": "Password changed successfully.",
+    "back": "Back",
+    "errors": {
+      "nameLength": "Name must be between 3 and 100 characters.",
+      "emailInvalid": "Please enter a valid email address.",
+      "bioTooLong": "Bio must be 500 characters or less.",
+      "countryRequired": "Please select your country.",
+      "genderRequired": "Please select your gender.",
+      "birthDateRequired": "Birth date is required.",
+      "oldPasswordRequired": "Current password is required.",
+      "newPasswordRequired": "New password is required.",
+      "newPasswordWeak": "Must contain uppercase, lowercase, digit, and special character.",
+      "newPasswordMin": "Password must be at least 8 characters.",
+      "confirmPasswordRequired": "Please confirm your new password.",
+      "passwordMismatch": "Passwords do not match.",
+      "network": "No internet connection. Please check your network.",
+      "server": "Something went wrong. Please try again later.",
+      "wrongPassword": "Current password is incorrect.",
+      "emailTaken": "That email is already in use."
+    }
+  },
+  "error": {
+    "unauthorized": "Session expired. Please log in again.",
+    "validation": "Please check your input and try again.",
+    "rateLimited": "Too many requests. Please wait a moment.",
+    "network": "No internet connection. Please check your network.",
+    "server": "Something went wrong. Please try again later.",
+    "notFound": "The requested resource was not found.",
+    "forbidden": "You don't have permission to do that.",
+    "profileSetupRequired": "Complete your Explorer profile before continuing.",
+    "unknown": "An unexpected error occurred."
+  }
+}
