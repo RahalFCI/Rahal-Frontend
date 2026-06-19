@@ -1,327 +1,277 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import type * as MapboxTypes from '@rnmapbox/maps';
-import { env } from '../../config/env';
-import { tokens } from '../theme';
-import { Text } from '../components/Text';
-import type {
-  MapCameraState,
-  MapProviderCapabilities,
-  MarkerData,
-  OfflineTilePackProgress,
-  OfflineTilePackRequest,
-  Region,
-} from './types';
-
-type MapboxModule = typeof MapboxTypes;
-type MapboxCameraRef = MapboxTypes.Camera;
-type MapState = MapboxTypes.MapState;
-
-const PLACES_SOURCE_ID = 'rahal-places';
-const CLUSTER_LAYER_ID = 'rahal-place-clusters';
-const CLUSTER_COUNT_LAYER_ID = 'rahal-place-cluster-count';
-const MARKER_LAYER_ID = 'rahal-place-markers';
-const SELECTED_MARKER_LAYER_ID = 'rahal-place-markers-selected';
-const DEFAULT_ZOOM = 12;
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  Camera,
+  GeoJSONSource,
+  Layer,
+  Map,
+  UserLocation,
+  type CameraRef,
+  type GeoJSONSourceRef,
+  type PressEventWithFeatures,
+  type StyleSpecification,
+} from '@maplibre/maplibre-react-native';
+import { LocateFixed } from 'lucide-react-native';
+import type { NativeSyntheticEvent } from 'react-native';
+import { Icon } from '../components';
+import { useTheme } from '../theme';
+import { resolveMapStyle } from './mapStyle';
+import { useUserLocation } from './useUserLocation';
+import type { MapCameraState, MapProviderCapabilities, MarkerData, Region } from './types';
 
 export const mapProviderCapabilities: MapProviderCapabilities = {
-  name: 'mapbox-vector',
+  name: 'maplibre-native',
   supportsVectorTiles: true,
   supportsOfflinePacks: true,
   supportsClustering: true,
-  requiresCustomDevClient: true,
 };
-
-let cachedMapbox: MapboxModule | null | undefined;
-
-function loadMapbox(): MapboxModule | null {
-  if (cachedMapbox !== undefined) return cachedMapbox;
-
-  try {
-    // Mapbox native code is unavailable in Expo Go. Guard the require so the
-    // route can still load and show an explicit fallback instead of crashing.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const loaded = require('@rnmapbox/maps') as MapboxModule;
-    cachedMapbox = loaded;
-
-    if (env.MAPBOX_ACCESS_TOKEN) {
-      loaded.default.setAccessToken(env.MAPBOX_ACCESS_TOKEN);
-    } else {
-      loaded.default.setAccessToken(null);
-    }
-
-    loaded.default.setTelemetryEnabled(false);
-  } catch {
-    cachedMapbox = null;
-  }
-
-  return cachedMapbox;
-}
 
 interface VectorMapProps {
   region: Region;
-  markers: MarkerData[];
-  selectedMarkerId?: string | null;
-  onMarkerPress?: (marker: MarkerData) => void;
-  onCameraSettled?: (state: MapCameraState) => void;
+  markers?: MarkerData[];
   onPress?: (coordinate: { latitude: number; longitude: number }) => void;
+  onCameraSettled?: (state: MapCameraState) => void;
+  onMarkerPress?: (id: string) => void;
+  /** Id of the currently-selected place; rendered with an emphasized beacon. */
+  selectedId?: string | null;
+  /** Show the user-location puck + recenter control. Default true. */
+  showUserLocation?: boolean;
 }
 
-function stateToCameraState(state: MapState): MapCameraState {
-  const [longitude, latitude] = state.properties.center;
-  const ne = state.properties.bounds.ne;
-  const sw = state.properties.bounds.sw;
-
-  return {
-    center: { latitude, longitude },
-    zoom: state.properties.zoom,
-    bounds: {
-      northEast: {
-        latitude: ne[1],
-        longitude: ne[0],
-      },
-      southWest: {
-        latitude: sw[1],
-        longitude: sw[0],
-      },
-    },
-  };
-}
-
-function markersToFeatureCollection(markers: MarkerData[]): GeoJSON.FeatureCollection<GeoJSON.Point> {
-  return {
-    type: 'FeatureCollection',
-    features: markers.map((marker) => ({
-      type: 'Feature',
-      id: marker.id,
-      geometry: {
-        type: 'Point',
-        coordinates: [marker.longitude, marker.latitude],
-      },
-      properties: {
-        id: marker.id,
-        title: marker.title ?? '',
-        categoryName: marker.categoryName ?? '',
-        isVisited: marker.isVisited ?? false,
-        isSelected: marker.isSelected ?? false,
-      },
-    })),
-  };
-}
-
+/**
+ * MapLibre Native renderer. The skin comes from `resolveMapStyle()` (bundled
+ * Solar Minimalist style by default; a hosted URL when configured). Renders
+ * clustered place markers, the user-location puck, and a recenter control.
+ */
 export function VectorMap({
   region,
-  markers,
-  selectedMarkerId,
-  onMarkerPress,
-  onCameraSettled,
+  markers = [],
   onPress,
+  onCameraSettled,
+  onMarkerPress,
+  selectedId,
+  showUserLocation = true,
 }: VectorMapProps) {
-  const Mapbox = loadMapbox();
-  const cameraRef = useRef<MapboxCameraRef>(null);
-  const markerById = useMemo(
-    () => new Map(markers.map((marker) => [marker.id, marker])),
-    [markers],
-  );
-  const shape = useMemo(
-    () =>
-      markersToFeatureCollection(
-        markers.map((marker) => ({
-          ...marker,
-          isSelected: marker.id === selectedMarkerId,
-        })),
-      ),
-    [markers, selectedMarkerId],
-  );
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const cameraRef = useRef<CameraRef>(null);
+  const sourceRef = useRef<GeoJSONSourceRef>(null);
+  // A marker tap and the map's background tap can both fire for one touch;
+  // this timestamp lets the background handler ignore the trailing event so a
+  // marker selection isn't immediately cleared.
+  const lastFeaturePressRef = useRef(0);
+  const { permission, isLocating, locate } = useUserLocation();
 
   useEffect(() => {
-    cameraRef.current?.setCamera({
-      centerCoordinate: [region.longitude, region.latitude],
-      zoomLevel: DEFAULT_ZOOM,
-      animationDuration: 450,
-      animationMode: 'easeTo',
+    cameraRef.current?.setStop({
+      center: [region.longitude, region.latitude],
+      zoom: region.zoom,
+      easing: 'ease',
+      duration: 450,
     });
-  }, [region.latitude, region.longitude]);
+  }, [region.latitude, region.longitude, region.zoom]);
 
-  if (!Mapbox) {
-    return <VectorMapUnavailable />;
+  const featureCollection = useMemo<GeoJSON.FeatureCollection>(
+    () => ({
+      type: 'FeatureCollection',
+      features: markers.map((marker) => ({
+        type: 'Feature',
+        id: marker.id,
+        geometry: { type: 'Point', coordinates: [marker.longitude, marker.latitude] },
+        properties: {
+          id: marker.id,
+          title: marker.title ?? '',
+          categoryName: marker.categoryName ?? '',
+          isVisited: marker.isVisited ?? false,
+        },
+      })),
+    }),
+    [markers],
+  );
+
+  async function handleSourcePress(event: NativeSyntheticEvent<PressEventWithFeatures>) {
+    const feature = event.nativeEvent.features?.[0];
+    if (!feature || feature.geometry.type !== 'Point') return;
+    lastFeaturePressRef.current = Date.now();
+
+    const [longitude, latitude] = feature.geometry.coordinates as [number, number];
+    const properties = (feature.properties ?? {}) as Record<string, unknown>;
+
+    if (properties.cluster) {
+      const clusterId = Number(properties.cluster_id);
+      const expansionZoom = await sourceRef.current?.getClusterExpansionZoom(clusterId);
+      cameraRef.current?.setStop({
+        center: [longitude, latitude],
+        zoom: expansionZoom ?? region.zoom + 2,
+        easing: 'ease',
+        duration: 450,
+      });
+      return;
+    }
+
+    onMarkerPress?.(String(properties.id ?? feature.id ?? ''));
   }
 
-  const Camera = Mapbox.Camera;
-  const CircleLayer = Mapbox.CircleLayer;
-  const ShapeSource = Mapbox.ShapeSource;
-  const SymbolLayer = Mapbox.SymbolLayer;
+  async function handleRecenter() {
+    const coordinates = await locate();
+    if (!coordinates) return;
+    cameraRef.current?.setStop({
+      center: [coordinates.longitude, coordinates.latitude],
+      zoom: Math.max(region.zoom, 14),
+      easing: 'ease',
+      duration: 450,
+    });
+  }
 
   return (
-    <Mapbox.default.MapView
-      style={StyleSheet.absoluteFill}
-      styleURL={env.MAP_STYLE_URL}
-      logoEnabled={false}
-      compassEnabled={false}
-      scaleBarEnabled={false}
-      attributionEnabled
-      regionDidChangeDebounceTime={450}
-      onPress={(feature) => {
-        const coordinates = feature.geometry.coordinates;
-        onPress?.({ longitude: coordinates[0], latitude: coordinates[1] });
-      }}
-      onMapIdle={(state) => onCameraSettled?.(stateToCameraState(state))}
-    >
-      <Camera
-        ref={cameraRef}
-        defaultSettings={{
-          centerCoordinate: [region.longitude, region.latitude],
-          zoomLevel: DEFAULT_ZOOM,
-        }}
-        minZoomLevel={6}
-        maxZoomLevel={18}
-      />
-      <ShapeSource
-        id={PLACES_SOURCE_ID}
-        shape={shape}
-        cluster
-        clusterRadius={56}
-        clusterMaxZoomLevel={14}
-        hitbox={{ width: 52, height: 52 }}
+    <View style={StyleSheet.absoluteFill}>
+      <Map
+        style={StyleSheet.absoluteFill}
+        mapStyle={resolveMapStyle() as string | StyleSpecification}
+        logo={false}
+        compass={false}
+        attribution
         onPress={(event) => {
-          const feature = event.features[0];
-          const id = feature?.properties?.id;
-          if (typeof id === 'string') {
-            const marker = markerById.get(id);
-            if (marker) onMarkerPress?.(marker);
+          // Ignore the background tap that trails a marker tap (same touch).
+          if (Date.now() - lastFeaturePressRef.current < 300) return;
+          const lngLat = (event.nativeEvent as { lngLat?: [number, number] }).lngLat;
+          if (lngLat) {
+            onPress?.({ latitude: lngLat[1], longitude: lngLat[0] });
           }
         }}
+        onRegionDidChange={(event) => {
+          const { center, zoom } = event.nativeEvent;
+          onCameraSettled?.({
+            center: { latitude: center[1], longitude: center[0] },
+            zoom,
+          });
+        }}
       >
-        <CircleLayer
-          id={CLUSTER_LAYER_ID}
-          filter={['has', 'point_count']}
-          style={{
-            circleColor: tokens.colors.primary,
-            circleRadius: ['step', ['get', 'point_count'], 18, 10, 23, 30, 28],
-            circleOpacity: 0.92,
-            circleStrokeColor: tokens.colors.surfaceContainerLowest,
-            circleStrokeWidth: 2,
+        <Camera
+          ref={cameraRef}
+          initialViewState={{
+            center: [region.longitude, region.latitude],
+            zoom: region.zoom,
           }}
+          minZoom={4}
+          maxZoom={18}
         />
-        <SymbolLayer
-          id={CLUSTER_COUNT_LAYER_ID}
-          filter={['has', 'point_count']}
-          style={{
-            textField: ['get', 'point_count_abbreviated'],
-            textSize: 12,
-            textColor: tokens.colors.onPrimary,
-            textAllowOverlap: true,
-          }}
-        />
-        <CircleLayer
-          id={MARKER_LAYER_ID}
-          filter={['!', ['has', 'point_count']]}
-          style={{
-            circleColor: [
-              'case',
-              ['==', ['get', 'isVisited'], true],
-              tokens.colors.onSurfaceVariant,
-              tokens.colors.primary,
-            ],
-            circleRadius: 10,
-            circleOpacity: 0.95,
-            circleStrokeColor: tokens.colors.surfaceContainerLowest,
-            circleStrokeWidth: 2,
-          }}
-        />
-        <CircleLayer
-          id={SELECTED_MARKER_LAYER_ID}
-          filter={['==', ['get', 'isSelected'], true]}
-          style={{
-            circleColor: tokens.colors.primaryContainer,
-            circleRadius: 16,
-            circleOpacity: 0.38,
-            circleStrokeColor: tokens.colors.primary,
-            circleStrokeWidth: 1,
-          }}
-        />
-        <SymbolLayer
-          id="rahal-place-labels"
-          minZoomLevel={13}
-          filter={['!', ['has', 'point_count']]}
-          style={{
-            textField: ['get', 'title'],
-            textSize: 11,
-            textColor: tokens.colors.onSurface,
-            textHaloColor: tokens.colors.surfaceContainerLowest,
-            textHaloWidth: 1,
-            textOffset: [0, 1.7],
-            textOptional: true,
-          }}
-        />
-      </ShapeSource>
-    </Mapbox.default.MapView>
-  );
-}
 
-export async function preloadOfflineTilePack(
-  request: OfflineTilePackRequest,
-  onProgress?: (progress: OfflineTilePackProgress) => void,
-) {
-  const Mapbox = loadMapbox();
+        {showUserLocation && permission === 'granted' ? <UserLocation animated /> : null}
 
-  if (!Mapbox) {
-    throw new Error('Mapbox native module is not available.');
-  }
+        {markers.length > 0 ? (
+          <GeoJSONSource
+            ref={sourceRef}
+            id="places"
+            data={featureCollection}
+            cluster
+            clusterRadius={50}
+            clusterMaxZoom={14}
+            onPress={handleSourcePress}
+          >
+            <Layer
+              id="place-cluster-halo"
+              type="circle"
+              filter={['has', 'point_count']}
+              paint={{
+                'circle-color': theme.colors.primary,
+                'circle-opacity': 0.12,
+                'circle-radius': ['step', ['get', 'point_count'], 24, 10, 30, 50, 38],
+              }}
+            />
+            <Layer
+              id="place-clusters"
+              type="circle"
+              filter={['has', 'point_count']}
+              paint={{
+                'circle-color': theme.colors.primaryContainer,
+                'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26],
+                'circle-stroke-width': 1.5,
+                'circle-stroke-color': theme.colors.primary,
+              }}
+            />
+            <Layer
+              id="place-cluster-count"
+              type="symbol"
+              filter={['has', 'point_count']}
+              layout={{
+                'text-field': ['get', 'point_count_abbreviated'],
+                'text-font': ['Noto Sans Regular'],
+                'text-size': 13,
+              }}
+              paint={{ 'text-color': theme.colors.primary }}
+            />
+            <Layer
+              id="place-point-halo"
+              type="circle"
+              filter={['!', ['has', 'point_count']]}
+              paint={{
+                'circle-color': theme.colors.primary,
+                'circle-opacity': 0.14,
+                'circle-radius': 14,
+              }}
+            />
+            <Layer
+              id="place-point"
+              type="circle"
+              filter={['!', ['has', 'point_count']]}
+              paint={{
+                'circle-color': theme.colors.primary,
+                'circle-radius': 6,
+                'circle-stroke-width': 2.5,
+                'circle-stroke-color': theme.colors.onPrimary,
+              }}
+            />
+            <Layer
+              id="place-point-selected"
+              type="circle"
+              filter={['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], selectedId ?? '']]}
+              paint={{
+                'circle-color': theme.colors.primary,
+                'circle-radius': 10,
+                'circle-stroke-width': 3.5,
+                'circle-stroke-color': theme.colors.onPrimary,
+              }}
+            />
+          </GeoJSONSource>
+        ) : null}
+      </Map>
 
-  await Mapbox.default.offlineManager.createPack(
-    {
-      name: request.name,
-      styleURL: env.MAP_STYLE_URL,
-      minZoom: request.minZoom,
-      maxZoom: request.maxZoom,
-      bounds: [
-        [request.bounds.northEast.longitude, request.bounds.northEast.latitude],
-        [request.bounds.southWest.longitude, request.bounds.southWest.latitude],
-      ],
-    },
-    (_pack, status) => {
-      onProgress?.({
-        name: status.name,
-        percentage: status.percentage,
-        completedTileCount: status.completedTileCount,
-        completedResourceCount: status.completedResourceCount,
-        requiredResourceCount: status.requiredResourceCount,
-      });
-    },
-  );
-}
-
-export async function clearOfflineTilePack(name: string) {
-  const Mapbox = loadMapbox();
-
-  if (!Mapbox) {
-    throw new Error('Mapbox native module is not available.');
-  }
-
-  const pack = await Mapbox.default.offlineManager.getPack(name);
-  if (pack) {
-    await Mapbox.default.offlineManager.deletePack(name);
-  }
-}
-
-export function VectorMapUnavailable() {
-  const { t } = useTranslation('places');
-
-  return (
-    <View
-      style={StyleSheet.absoluteFill}
-      className="items-center justify-center bg-surface px-[24px]"
-    >
-      <View className="rounded-xl bg-surface-container-lowest px-[18px] py-[16px]">
-        <Text variant="bodyLarge" className="text-on-surface font-bold text-center">
-          {t('map.providerUnavailable')}
-        </Text>
-        <Text variant="bodyMedium" className="mt-[6px] text-on-surface-variant text-center">
-          {t('map.providerUnavailableHint')}
-        </Text>
-      </View>
+      {showUserLocation ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Center map on my location"
+          onPress={handleRecenter}
+          disabled={isLocating}
+          style={[
+            styles.locateButton,
+            theme.elevation.ambientShadow,
+            {
+              // Clear the floating Archivist bar (bottom:16 + ~56 tall + safe area).
+              bottom: insets.bottom + 88,
+              backgroundColor: theme.colors.surfaceContainerLowest,
+              borderColor: theme.colors.outlineVariant,
+              opacity: isLocating ? 0.6 : 1,
+            },
+          ]}
+        >
+          <Icon icon={LocateFixed} size={22} color={theme.colors.primary} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  locateButton: {
+    position: 'absolute',
+    right: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

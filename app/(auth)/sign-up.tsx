@@ -11,7 +11,6 @@ import {
   Platform,
   Pressable,
   ActivityIndicator,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -27,11 +26,6 @@ import { useToast } from '../../src/shared/components/Toast';
 import { useSignUp } from '../../src/features/auth/hooks/useSignUp';
 import { signUpSchema, type SignUpFormData } from '../../src/features/auth/schemas/signUp.schema';
 import { PhoneNumberInput } from '../../src/features/auth/components/PhoneNumberInput';
-import { DatePickerField } from '../../src/features/auth/components/DatePickerField';
-import { GenderSelector } from '../../src/features/auth/components/GenderSelector';
-import { CountryPicker } from '../../src/features/auth/components/CountryPicker';
-import { ProfilePicturePicker } from '../../src/features/auth/components/ProfilePicturePicker';
-import { LabelCaps } from '../../src/shared/components/LabelCaps';
 import { ApiError, ApiValidationError } from '../../src/shared/api/errors';
 import { tokens } from '../../src/shared/theme';
 
@@ -55,12 +49,6 @@ export default function SignUpScreen() {
       password: '',
       confirmPassword: '',
       phoneNumber: '',
-      birthDate: undefined,
-      gender: undefined,
-      bio: '',
-      countryCode: '',
-      isPublic: true,
-      profilePicture: undefined,
     },
   });
 
@@ -73,12 +61,6 @@ export default function SignUpScreen() {
         password: data.password,
         confirmPassword: data.confirmPassword,
         phoneNumber: data.phoneNumber,
-        birthDate: data.birthDate.toISOString().split('T')[0],
-        gender: Number(data.gender),
-        bio: data.bio ?? '',
-        countryCode: data.countryCode,
-        isPublic: data.isPublic,
-        profilePicture: data.profilePicture,
       },
       {
         onError: (error) => {
@@ -239,116 +221,6 @@ export default function SignUpScreen() {
                   />
                 )}
               />
-
-              {/* Profile picture */}
-              <Controller
-                control={control}
-                name="profilePicture"
-                render={({ field }) => (
-                  <ProfilePicturePicker
-                    label={t('signUp.profilePictureLabel')}
-                    actionLabel={t('signUp.profilePictureAction')}
-                    changeLabel={t('signUp.profilePictureChange')}
-                    helperText={t('signUp.profilePictureHelper')}
-                    permissionDeniedText={t('signUp.profilePicturePermissionDenied')}
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-
-              {/* Country */}
-              <Controller
-                control={control}
-                name="countryCode"
-                render={({ field: { onChange, value }, fieldState }) => (
-                  <CountryPicker
-                    label={t('signUp.countryLabel')}
-                    placeholder={t('signUp.countryPlaceholder')}
-                    value={value}
-                    onChange={onChange}
-                    error={fieldState.error?.message ? t(fieldState.error.message) : undefined}
-                  />
-                )}
-              />
-
-              {/* Gender */}
-              <Controller
-                control={control}
-                name="gender"
-                render={({ field: { onChange, value }, fieldState }) => (
-                  <GenderSelector
-                    label={t('signUp.genderLabel')}
-                    value={value}
-                    onChange={onChange}
-                    error={fieldState.error?.message ? t(fieldState.error.message) : undefined}
-                    maleLabel={t('signUp.genderMale')}
-                    femaleLabel={t('signUp.genderFemale')}
-                  />
-                )}
-              />
-
-              {/* Birth date */}
-              <Controller
-                control={control}
-                name="birthDate"
-                render={({ field: { onChange, value }, fieldState }) => (
-                  <DatePickerField
-                    label={t('signUp.birthDateLabel')}
-                    placeholder={t('signUp.birthDatePlaceholder')}
-                    value={value}
-                    onChange={onChange}
-                    error={fieldState.error?.message ? t(fieldState.error.message) : undefined}
-                    maximumDate={new Date()}
-                  />
-                )}
-              />
-
-              {/* Bio */}
-              <Controller
-                control={control}
-                name="bio"
-                render={({ field: { onChange, onBlur, value }, fieldState }) => (
-                  <TextInput
-                    label={t('signUp.bioLabel')}
-                    placeholder={t('signUp.bioPlaceholder')}
-                    value={value ?? ''}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={fieldState.error?.message ? t(fieldState.error.message) : undefined}
-                    multiline
-                    numberOfLines={3}
-                    editable={!signUp.isPending}
-                    accessibilityLabel={t('signUp.bioLabel')}
-                  />
-                )}
-              />
-
-              {/* Public profile */}
-              <View className="flex-row items-center justify-between bg-surface-container-high rounded-sm px-[16px] py-[14px]">
-                <View className="flex-1 pr-[16px]">
-                  <LabelCaps>{t('signUp.isPublicLabel')}</LabelCaps>
-                  <Text variant="bodyMedium" className="text-on-surface-variant mt-[2px]">
-                    {t('signUp.isPublicDescription')}
-                  </Text>
-                </View>
-                <Controller
-                  control={control}
-                  name="isPublic"
-                  render={({ field }) => (
-                    <Switch
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={signUp.isPending}
-                      trackColor={{
-                        false: tokens.colors.surfaceContainerHigh,
-                        true: tokens.colors.primary,
-                      }}
-                      thumbColor={tokens.colors.onPrimary}
-                    />
-                  )}
-                />
-              </View>
             </View>
 
             {/* Submit */}
@@ -407,12 +279,6 @@ function backendFieldToFormField(property: string): keyof SignUpFormData {
     password: 'password',
     confirmPassword: 'confirmPassword',
     phoneNumber: 'phoneNumber',
-    birthDate: 'birthDate',
-    gender: 'gender',
-    bio: 'bio',
-    countryCode: 'countryCode',
-    isPublic: 'isPublic',
-    profilePicture: 'profilePicture',
   };
   return map[normalized] ?? 'email';
 }

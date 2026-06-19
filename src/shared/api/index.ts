@@ -1,4 +1,4 @@
-export { apiClient, apiClientNoContent } from './client';
+export { apiClient, apiClientNoContent, publicApiClient } from './client';
 export {
   ApiError,
   ApiValidationError,

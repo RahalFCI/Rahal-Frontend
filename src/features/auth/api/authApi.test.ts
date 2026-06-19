@@ -58,15 +58,8 @@ describe('auth API endpoint alignment', () => {
     });
   });
 
-  it('registers an Explorer with the backend multipart profile shape', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          isSuccess: true,
-          data: 'User registered successfully',
-        }),
-    });
-    vi.stubGlobal('fetch', fetchMock);
+  it('registers an Explorer with the backend account-only JSON shape', async () => {
+    apiClientMock.mockResolvedValueOnce('User registered successfully');
 
     await register({
       name: 'Explorer One',
@@ -74,28 +67,20 @@ describe('auth API endpoint alignment', () => {
       password: 'Password1!',
       confirmPassword: 'Password1!',
       phoneNumber: '+201001234567',
-      birthDate: '2000-01-01',
-      gender: 1,
-      bio: 'Cataloging places',
-      countryCode: 'EG',
-      isPublic: true,
     });
 
-    expect(fetchMock).toHaveBeenCalledWith('http://api.test/api/User/register', {
+    expect(apiClientMock).toHaveBeenCalledWith({
       method: 'POST',
-      body: expect.any(FormData),
+      url: authEndpoints.user.register,
+      data: {
+        name: 'Explorer One',
+        email: 'e@example.com',
+        password: 'Password1!',
+        confirmPassword: 'Password1!',
+        phoneNumber: '+201001234567',
+        userRole: 'Explorer',
+      },
     });
-    const formData = fetchMock.mock.calls[0][1].body as FormData;
-    expect(formData.get('Name')).toBe('Explorer One');
-    expect(formData.get('Email')).toBe('e@example.com');
-    expect(formData.get('Password')).toBe('Password1!');
-    expect(formData.get('ConfirmPassword')).toBe('Password1!');
-    expect(formData.get('PhoneNumber')).toBe('+201001234567');
-    expect(formData.get('BirthDate')).toBe('2000-01-01');
-    expect(formData.get('Gender')).toBe('1');
-    expect(formData.get('Bio')).toBe('Cataloging places');
-    expect(formData.get('CountryCode')).toBe('EG');
-    expect(formData.get('IsPublic')).toBe('true');
   });
 
   it('uses AuthController for token refresh', async () => {

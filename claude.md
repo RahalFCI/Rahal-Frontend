@@ -108,11 +108,11 @@ The backend returns every response wrapped in `ApiResponse<T>` (Success/Failure 
 
 ### 2.5 Map Provider Abstraction
 
-Map provider is **undecided** between Google Maps, Apple Maps, and Mapbox. To avoid rework:
+Map provider is **MapLibre** as of 2026-06-19 (see Decision Log §9). The abstraction below remains so the renderer can still be swapped without touching screens:
 
 - Define a `MapProvider` interface in `shared/map/` with the operations the app actually needs (render map, set region, render markers, render clustered markers, handle press, apply custom theme JSON).
 - All screens import from this abstraction. The concrete implementation is swapped at the `shared/map/provider.ts` level.
-- **Custom map theming is a hard requirement.** The chosen provider must support styled maps. This alone may force the Mapbox decision — evaluated in Phase 2.
+- **Custom map theming is a hard requirement.** MapLibre satisfies this via vector style JSON (OpenFreeMap default; MapTiler/self-hosted for the Solar Minimalist skin), identically on iOS and Android.
 
 ### 2.6 Auth Lifecycle
 
@@ -388,6 +388,10 @@ Append-only. Every architectural decision goes here with rationale.
 | 2026-04-13 | Biometric unlock deferred                                        | Post-MVP consideration                                                                                                                                 |
 | 2026-04-28 | Explorer registration uses multipart form data                   | Backend accepts `RegisterExplorerDto` via `[FromForm]` plus optional `profilePicture` upload; frontend must not send `profilePictureUrl` during signup |
 | 2026-04-28 | Email verification is part of Phase 1 auth                       | Backend blocks login until OTP verification succeeds, so frontend routes signup success to email verification before sign-in                           |
+| 2026-06-19 | Map provider = **MapLibre** (`@maplibre/maplibre-react-native` native + `maplibre-gl` web), tiles from OpenFreeMap (keyless) / MapTiler | Supersedes the deferred provider question (§2.5) and an earlier in-progress Mapbox spike. MapLibre gives identical custom vector theming on iOS+Android with no SDK token and no per-load billing — vs. Mapbox (secret download token + billing) and react-native-maps/expo-maps (no custom skin on Apple Maps). |
+| 2026-06-19 | Expo Go constraint relaxed in favor of a custom **dev client**   | MapLibre is a native module not in Expo Go. A dev client is required regardless of provider, so optimizing for Expo Go was dropped. See `docs/dev-client.md`. |
+| 2026-06-19 | Backend `docs/backend-api-reference.md` is the API source of truth | Avoids re-scanning Rahal-Backend each session; records the places/vendor/search contract and the vendor lat/long gap (backend adding coordinates). |
+| 2026-06-19 | Vendor location modeled as `Place.VendorId` (soft ref), **not** duplicated lat/long on `VendorProfile` | `Place` and `VendorProfile` are in separate bounded contexts/DbContexts (no cross-context FK). A nullable `Place.VendorId` reuses the existing `Challenge.PlaceId` pattern (1 vendor : N places), keeps one geographic source of truth, and gives vendors check-ins/reviews/search for free. Requires a small backend change (see `docs/backend-vendor-place-proposal.md`); frontend map work builds against `Place` and is not blocked. Open decision for backend: authorship/approval of vendor-operated places. |
 
 ---
 
@@ -404,7 +408,7 @@ Append-only. Every architectural decision goes here with rationale.
 ## 11. Open Questions (To Resolve)
 
 1. Graduation defense date → anchor M1–M6 to calendar dates.
-2. Map provider choice → finalized at Phase 2 entry.
+2. ~~Map provider choice~~ → **Resolved 2026-06-19: MapLibre** (Decision Log §9).
 3. Secondary payment gateway (if any) → finalized at Phase 6 entry.
 4. Biometric unlock → post-MVP go/no-go.
 5. Analytics provider → post-MVP.

@@ -1,19 +1,11 @@
-export const placesEndpoints = {
-  places: {
-    list: '/Place',
-    detail: (id: string) => `/Place/${id}`,
-    byCategory: (categoryId: string) => `/Place/category/${categoryId}`,
-    searchNearby: '/Place/search',
-  },
-  categories: {
-    list: '/PlaceCategory',
-    detail: (id: string) => `/PlaceCategory/${id}`,
-  },
-  photos: {
-    byPlace: (placeId: string) => `/PlacePhoto/place/${placeId}`,
-    batch: '/PlacePhoto/batch',
-  },
-  search: {
-    places: '/Search/places',
-  },
+/**
+ * Place endpoints (relative to env.API_BASE_URL, which already includes /api).
+ * See docs/backend-api-reference.md (PlaceController).
+ */
+export const placeEndpoints = {
+  list: '/Place',
+  byId: (id: string) => `/Place/${id}`,
+  byCategory: (categoryId: string) => `/Place/category/${categoryId}`,
+  /** ⚠ binds [FromQuery] despite being POST — pass params via query string. */
+  search: '/Place/search',
 } as const;

@@ -39,6 +39,12 @@ const instance: AxiosInstance = axios.create({
   headers: { Accept: 'application/json' },
 });
 
+const publicInstance: AxiosInstance = axios.create({
+  baseURL: env.API_BASE_URL,
+  timeout: 15000,
+  headers: { Accept: 'application/json' },
+});
+
 // Wire refresh interceptor
 setupRefreshInterceptor(instance);
 
@@ -85,6 +91,48 @@ export async function apiClient<T>(config: AxiosRequestConfig): Promise<T> {
 }
 
 /**
+ * Public request helper. Uses the same ApiResponse unwrapping as apiClient,
+ * but never attaches an Authorization header.
+ */
+export async function publicApiClient<T>(config: AxiosRequestConfig): Promise<T> {
+  try {
+    const response = await publicInstance.request<ApiResponse<T>>(config);
+    const body = response.data;
+
+    if (body.isSuccess && body.data !== undefined) {
+      return body.data;
+    }
+
+    throw new ApiError(
+      resolveErrorCode(response.status, body.errorCode),
+      'Request failed',
+      response.status,
+    );
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+
+    if (isAxiosError(error)) {
+      const status = error.response?.status ?? 0;
+      const body = error.response?.data as
+        | (ApiResponse<unknown> & ValidationErrorResponse)
+        | undefined;
+
+      if (!error.response) {
+        throw new ApiError('NETWORK', error.message, 0);
+      }
+
+      if (body?.errors && Array.isArray(body.errors)) {
+        throw new ApiValidationError(body.errors);
+      }
+
+      throw new ApiError(resolveErrorCode(status, body?.errorCode), error.message, status);
+    }
+
+    throw new ApiError('NETWORK', 'Network request failed', 0);
+  }
+}
+
+/**
  * Request helper for endpoints that return 204 No Content (e.g., logout).
  * Does not attempt to parse a response body.
  */
@@ -104,5 +152,5 @@ export async function apiClientNoContent(config: AxiosRequestConfig): Promise<vo
   }
 }
 
-/** Expose the raw instance for interceptor setup */
-export { instance as axiosInstance };
+/** Expose raw instances for endpoint-specific adapters. */
+export { instance as axiosInstance, publicInstance as publicAxiosInstance };

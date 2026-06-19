@@ -1,6 +1,6 @@
 # Auth API Contract — Phase 1
 
-> Re-checked against `E:\projects\Rahal-Backend` on 2026-06-04.
+> Re-checked against `E:\projects\Rahal-Backend` on 2026-06-08.
 > This document describes the backend contract the frontend currently targets.
 
 ## Base URL

@@ -94,12 +94,6 @@ export interface RegisterExplorerDto {
   password: string;
   confirmPassword: string;
   phoneNumber: string;
-  birthDate: string;
-  gender: number;
-  bio: string;
-  countryCode: string;
-  isPublic: boolean;
-  profilePicture?: ProfilePictureFile;
   userRole?: 'Explorer';
 }
 
@@ -177,48 +171,15 @@ export function googleSignIn(body: GoogleSignInRequestDto) {
   });
 }
 
-export async function register(body: RegisterExplorerDto): Promise<string> {
-  const formData = new FormData();
-  formData.append('Name', body.name);
-  formData.append('Email', body.email);
-  formData.append('Password', body.password);
-  formData.append('ConfirmPassword', body.confirmPassword);
-  formData.append('PhoneNumber', body.phoneNumber);
-  formData.append('BirthDate', body.birthDate);
-  formData.append('Gender', String(body.gender));
-  formData.append('Bio', body.bio);
-  formData.append('CountryCode', body.countryCode);
-  formData.append('IsPublic', String(body.isPublic));
-  if (body.profilePicture) {
-    formData.append('profilePicture', body.profilePicture as unknown as Blob);
-  }
-
-  let response: Response;
-  try {
-    response = await fetch(`${env.API_BASE_URL}${authEndpoints.user.register}`, {
-      method: 'POST',
-      body: formData,
-    });
-  } catch (err) {
-    throw new ApiError('NETWORK', err instanceof Error ? err.message : 'Network request failed', 0);
-  }
-
-  const json = (await response.json()) as {
-    isSuccess: boolean;
-    data?: string;
-    errorCode?: number | string;
-    errors?: { property: string; message: string }[];
-  };
-
-  if (json.isSuccess && typeof json.data === 'string') {
-    return json.data;
-  }
-
-  if (json.errors && Array.isArray(json.errors)) {
-    throw new ApiValidationError(json.errors);
-  }
-
-  throw new ApiError(resolveErrorCode(response.status, json.errorCode), 'Registration failed', response.status);
+export function register(body: RegisterExplorerDto): Promise<string> {
+  return apiClient<string>({
+    method: 'POST',
+    url: authEndpoints.user.register,
+    data: {
+      ...body,
+      userRole: body.userRole ?? 'Explorer',
+    },
+  });
 }
 
 export function logout() {
@@ -369,7 +330,11 @@ async function parseExplorerProfileFormResponse(
     throw new ApiValidationError(json.errors);
   }
 
-  throw new ApiError(resolveErrorCode(response.status, json.errorCode), fallbackMessage, response.status);
+  throw new ApiError(
+    resolveErrorCode(response.status, json.errorCode),
+    fallbackMessage,
+    response.status,
+  );
 }
 
 export async function createExplorerProfile(body: CreateExplorerDto): Promise<ExplorerProfileDto> {
@@ -413,11 +378,14 @@ async function updateExplorerProfilePicture(
 
   let response: Response;
   try {
-    response = await fetch(`${env.API_BASE_URL}${authEndpoints.explorerProfile.updatePicture(id)}`, {
-      method: 'PUT',
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
-      body: formData,
-    });
+    response = await fetch(
+      `${env.API_BASE_URL}${authEndpoints.explorerProfile.updatePicture(id)}`,
+      {
+        method: 'PUT',
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        body: formData,
+      },
+    );
   } catch (err) {
     throw new ApiError('NETWORK', err instanceof Error ? err.message : 'Network request failed', 0);
   }

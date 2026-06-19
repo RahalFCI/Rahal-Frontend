@@ -1,3 +1,116 @@
 {
-  "_comment": "Map theme placeholder. See design.md §3.4 (Map Theming) for the Solar Minimalist palette: warm off-white base (surface), muted road strokes, amber POI highlights for Rahal-curated places. Concrete theme JSON authored in Phase 2 after provider decision."
+  "version": 8,
+  "name": "Rahal Solar Minimalist",
+  "metadata": {
+    "rahal:note": "Hand-tuned MapLibre skin aligned to the Solar Minimalist tokens (src/shared/theme/tokens.ts). Warm 'aged journal' palette: parchment base, sage parks, soft slate water, paper roads. Keyless: vector tiles, glyphs and sprite are served by OpenFreeMap. Amber (primary) is deliberately reserved for Rahal-curated markers, so base-map POIs are muted/omitted here (CLAUDE.md §3.4)."
+  },
+  "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+  "sprite": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm",
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://tiles.openfreemap.org/planet"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": { "background-color": "#F3EEE3" }
+    },
+    {
+      "id": "landcover",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "paint": { "fill-color": "#EBE4D4", "fill-opacity": 0.6 }
+    },
+    {
+      "id": "park",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "park",
+      "paint": { "fill-color": "#DDE7CF", "fill-opacity": 0.8 }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "paint": { "fill-color": "#BFD3D9" }
+    },
+    {
+      "id": "building",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "minzoom": 14,
+      "paint": {
+        "fill-color": "#E4DAC6",
+        "fill-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 16, 0.7]
+      }
+    },
+    {
+      "id": "road-minor",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["!in", "class", "motorway", "trunk", "primary"],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": {
+        "line-color": "#EDE6D8",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.4, 14, 1.5, 18, 8]
+      }
+    },
+    {
+      "id": "road-major-casing",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "motorway", "trunk", "primary"],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": {
+        "line-color": "#E0D3B8",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1, 14, 5, 18, 18]
+      }
+    },
+    {
+      "id": "road-major",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "motorway", "trunk", "primary"],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": {
+        "line-color": "#FBF7EF",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 14, 3.5, 18, 13]
+      }
+    },
+    {
+      "id": "boundary",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "filter": ["<=", "admin_level", 4],
+      "paint": { "line-color": "#C7BBA1", "line-dasharray": [3, 2], "line-width": 1 }
+    },
+    {
+      "id": "place-label",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "filter": ["in", "class", "city", "town", "village"],
+      "layout": {
+        "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 6, 11, 12, 15],
+        "text-max-width": 8
+      },
+      "paint": {
+        "text-color": "#6B6450",
+        "text-halo-color": "#F3EEE3",
+        "text-halo-width": 1.4
+      }
+    }
+  ]
 }

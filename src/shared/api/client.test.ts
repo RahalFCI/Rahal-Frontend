@@ -9,7 +9,13 @@ vi.mock('../../config/env', () => ({
   },
 }));
 
-import { apiClient, apiClientNoContent, axiosInstance } from './client';
+import {
+  apiClient,
+  apiClientNoContent,
+  axiosInstance,
+  publicApiClient,
+  publicAxiosInstance,
+} from './client';
 import { ApiError, ApiValidationError } from './errors';
 
 describe('apiClient', () => {
@@ -67,5 +73,23 @@ describe('apiClientNoContent', () => {
     await expect(
       apiClientNoContent({ method: 'POST', url: '/User/logout' }),
     ).resolves.toBeUndefined();
+  });
+});
+
+describe('publicApiClient', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('unwraps public ApiResponse envelopes through the no-auth instance', async () => {
+    const request = vi.spyOn(publicAxiosInstance, 'request').mockResolvedValue({
+      status: 200,
+      data: { isSuccess: true, data: [{ id: 'place-1' }], errorCode: 'None' },
+    });
+
+    await expect(publicApiClient({ method: 'GET', url: '/Place' })).resolves.toEqual([
+      { id: 'place-1' },
+    ]);
+    expect(request.mock.calls[0][0].headers?.Authorization).toBeUndefined();
   });
 });

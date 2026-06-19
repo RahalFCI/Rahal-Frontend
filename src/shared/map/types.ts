@@ -1,62 +1,44 @@
-export interface Region {
+/**
+ * Provider-agnostic map types. The concrete renderer (MapLibre native / web)
+ * lives behind `VectorMap`; screens import only from this abstraction so the
+ * provider can be swapped without touching feature code (CLAUDE.md §2.5).
+ */
+
+/** A geographic point. */
+export interface Coordinates {
   latitude: number;
   longitude: number;
-  latitudeDelta: number;
-  longitudeDelta: number;
 }
 
-export interface MapBounds {
-  northEast: {
-    latitude: number;
-    longitude: number;
-  };
-  southWest: {
-    latitude: number;
-    longitude: number;
-  };
+/** Initial / target camera framing. */
+export interface Region extends Coordinates {
+  /** MapLibre zoom level (≈ 0 world … 20 building). */
+  zoom: number;
 }
 
-export interface MarkerData {
+/** Emitted when the camera settles after a pan/zoom. */
+export interface MapCameraState {
+  center: Coordinates;
+  zoom: number;
+}
+
+/**
+ * A point rendered on the map. Places supply these today (they carry
+ * coordinates); vendor-operated places join once `Place.VendorId` ships
+ * (docs/backend-vendor-place-proposal.md).
+ */
+export interface MarkerData extends Coordinates {
   id: string;
-  latitude: number;
-  longitude: number;
   title?: string;
-  description?: string;
   categoryId?: string;
   categoryName?: string;
   isVisited?: boolean;
-  isSelected?: boolean;
-  updatedAt?: string | null;
 }
 
-export interface MapCameraState {
-  center: {
-    latitude: number;
-    longitude: number;
-  };
-  zoom: number;
-  bounds: MapBounds;
-}
-
-export interface OfflineTilePackRequest {
-  name: string;
-  bounds: MapBounds;
-  minZoom: number;
-  maxZoom: number;
-}
-
-export interface OfflineTilePackProgress {
-  name: string;
-  percentage: number;
-  completedTileCount: number;
-  completedResourceCount: number;
-  requiredResourceCount: number;
-}
-
+/** Capabilities of the active map provider. */
 export interface MapProviderCapabilities {
-  name: 'mapbox-vector' | 'maplibre-web';
+  name: 'maplibre-native' | 'maplibre-web';
   supportsVectorTiles: boolean;
   supportsOfflinePacks: boolean;
   supportsClustering: boolean;
-  requiresCustomDevClient: boolean;
 }

@@ -65,12 +65,12 @@ export const env = {
   GOOGLE_ANDROID_CLIENT_ID:
     (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID as string | undefined)?.trim() ?? '',
 
-  /** Optional public token for Mapbox-hosted styles/tiles in custom dev clients. */
-  MAPBOX_ACCESS_TOKEN:
-    (process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN as string | undefined)?.trim() ?? '',
-
-  /** Override for the vector base map style. Defaults to a public MapLibre demo style. */
-  MAP_STYLE_URL:
-    (process.env.EXPO_PUBLIC_MAP_STYLE_URL as string | undefined)?.trim() ??
-    'https://demotiles.maplibre.org/style.json',
+  /**
+   * Optional hosted MapLibre style URL. When set (e.g. a MapTiler-authored
+   * Solar Minimalist style), it OVERRIDES the bundled hand-tuned skin in
+   * `shared/map/theme.json`. Leave unset to use the local skin. This is the seam
+   * that lets us swap to a hosted style later without touching map code — see
+   * `shared/map/mapStyle.ts`.
+   */
+  MAP_STYLE_URL: (process.env.EXPO_PUBLIC_MAP_STYLE_URL as string | undefined)?.trim() || undefined,
 } as const;
