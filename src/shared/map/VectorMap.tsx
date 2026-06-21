@@ -16,6 +16,7 @@ import { LocateFixed } from 'lucide-react-native';
 import type { NativeSyntheticEvent } from 'react-native';
 import { Icon } from '../components';
 import { useTheme } from '../theme';
+import { EGYPT_BOUNDS, EGYPT_MIN_ZOOM, egyptBoundary, egyptMask } from './egypt';
 import { resolveMapStyle } from './mapStyle';
 import { useUserLocation } from './useUserLocation';
 import type { MapCameraState, MapProviderCapabilities, MarkerData, Region } from './types';
@@ -154,9 +155,30 @@ export function VectorMap({
             center: [region.longitude, region.latitude],
             zoom: region.zoom,
           }}
-          minZoom={4}
+          minZoom={EGYPT_MIN_ZOOM}
           maxZoom={18}
+          maxBounds={[EGYPT_BOUNDS.sw[0], EGYPT_BOUNDS.sw[1], EGYPT_BOUNDS.ne[0], EGYPT_BOUNDS.ne[1]]}
         />
+
+        {/* "Coming soon" treatment: dim everything outside Egypt and outline it. */}
+        <GeoJSONSource id="egypt-mask" data={egyptMask}>
+          <Layer
+            id="egypt-mask-fill"
+            type="fill"
+            paint={{ 'fill-color': theme.colors.onSurface, 'fill-opacity': 0.4 }}
+          />
+        </GeoJSONSource>
+        <GeoJSONSource id="egypt-boundary" data={egyptBoundary}>
+          <Layer
+            id="egypt-boundary-line"
+            type="line"
+            paint={{
+              'line-color': theme.colors.primary,
+              'line-width': 1.5,
+              'line-opacity': 0.5,
+            }}
+          />
+        </GeoJSONSource>
 
         {showUserLocation && permission === 'granted' ? <UserLocation animated /> : null}
 

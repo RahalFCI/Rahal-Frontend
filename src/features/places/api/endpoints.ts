@@ -7,5 +7,10 @@ export const placeEndpoints = {
   byId: (id: string) => `/Place/${id}`,
   byCategory: (categoryId: string) => `/Place/category/${categoryId}`,
   /** ⚠ binds [FromQuery] despite being POST — pass params via query string. */
-  search: '/Place/search',
+  geoSearch: '/Place/search',
+  /** Full-text search — non-standard `{ success, data }` envelope. */
+  search: '/Search/places',
+  categories: '/PlaceCategory',
+  photos: (placeId: string) => `/PlacePhoto/place/${placeId}`,
+  reviews: (placeId: string) => `/PlaceReview/place/${placeId}`,
 } as const;

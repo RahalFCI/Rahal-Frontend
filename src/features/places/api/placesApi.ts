@@ -28,3 +28,15 @@ export async function getPlace(id: string): Promise<Place> {
   });
   return zodParse(placeSchema, data);
 }
+
+export async function getPlacesByCategory(
+  categoryId: string,
+  { page = 1, pageSize = 50 }: GetPlacesParams = {},
+): Promise<PagedPlaces> {
+  const data = await publicApiClient<unknown>({
+    method: 'GET',
+    url: placeEndpoints.byCategory(categoryId),
+    params: { page, pageSize },
+  });
+  return zodParse(pagedPlacesSchema, data);
+}

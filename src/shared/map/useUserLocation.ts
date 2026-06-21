@@ -33,9 +33,26 @@ export function useUserLocation(): UseUserLocation {
       }
       setPermission('granted');
 
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      // A fresh fix can hang indefinitely (emulator with no location set, or a
+      // cold first-fix indoors). Use any cached fix immediately, and cap the
+      // fresh request with a timeout so the recenter button never stays stuck
+      // in its disabled/locating state.
+      const lastKnown = await Location.getLastKnownPositionAsync();
+      if (lastKnown) {
+        const cached: Coordinates = {
+          latitude: lastKnown.coords.latitude,
+          longitude: lastKnown.coords.longitude,
+        };
+        setCoordinates(cached);
+        return cached;
+      }
+
+      const position = await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+      ]);
+      if (!position) return null;
+
       const next: Coordinates = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,

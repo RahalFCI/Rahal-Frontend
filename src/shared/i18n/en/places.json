@@ -8,11 +8,48 @@
   "map": {
     "recenter": "Center map on my location"
   },
+  "search": {
+    "placeholder": "Search the Citadel, Giza, or Old Cairo",
+    "clear": "Clear search",
+    "filters": "Filters"
+  },
   "quest": {
     "curated": "Curated Place",
-    "entry": "Entry",
-    "priceFree": "Free",
-    "priceValue": "EGP {{price}}",
+    "viewDetails": "View {{name}} details",
     "close": "Close"
+  },
+  "checkIn": {
+    "label": "Check In",
+    "pending": "Checking In…",
+    "action": "Check in at {{name}}",
+    "success": "Checked in at {{name}}. Logged to your journal.",
+    "successGeneric": "Checked in. Logged to your journal.",
+    "locationUnavailable": "We couldn't read your location. Enable location access to check in."
+  },
+  "error": {
+    "alreadyCheckedIn": "You've already checked in here.",
+    "userNotAtLocation": "You need to be at this place to check in.",
+    "impossibleTravel": "That check-in looked impossible. Try again from the location.",
+    "locationSpoofingDetected": "We couldn't verify your location. Turn off mock locations and try again."
+  },
+  "detail": {
+    "close": "Close",
+    "share": "Share",
+    "narrative": "The Narrative",
+    "visualArchive": "Visual Archive",
+    "viewAll": "View All",
+    "address": "Address",
+    "addressUnknown": "Location not catalogued",
+    "openingHours": "Opening Hours",
+    "hoursUnavailable": "Hours not available",
+    "explorers": "explorers",
+    "reviews": "reviews",
+    "notFound": "This relic could not be found.",
+    "actions": {
+      "navigate": "Navigate",
+      "call": "Call",
+      "website": "Website",
+      "save": "Save"
+    }
   }
 }

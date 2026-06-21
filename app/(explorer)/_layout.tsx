@@ -25,7 +25,12 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
     <ArchivistBar>
       {state.routes.map((route, index) => {
-        if (route.name === '_dev-auth' || route.name === 'edit-profile') return null;
+        if (
+          route.name === '_dev-auth' ||
+          route.name === 'edit-profile' ||
+          route.name === 'place/[id]'
+        )
+          return null;
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
         const IconComponent = icons[route.name as keyof typeof icons] ?? Compass;
@@ -84,6 +89,7 @@ export default function ExplorerLayout() {
       <Tabs.Screen name="rewards" options={{ title: t('tabs.rewards') }} />
       <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
       <Tabs.Screen name="edit-profile" options={{ href: null }} />
+      <Tabs.Screen name="place/[id]" options={{ href: null }} />
       <Tabs.Screen name="_dev-auth" options={{ href: null }} />
     </Tabs>
   );

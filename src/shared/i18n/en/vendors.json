@@ -1,0 +1,12 @@
+{
+  "authenticMerchant": "Authentic Merchant",
+  "archivistNote": "The Archivist's Note",
+  "visualArtifacts": "Visual Artifacts",
+  "today": "Today",
+  "openNow": "Open Now",
+  "navigateToLocation": "Navigate to Location",
+  "actions": {
+    "map": "Map",
+    "menu": "Menu"
+  }
+}

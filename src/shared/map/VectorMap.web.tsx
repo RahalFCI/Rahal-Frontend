@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 import maplibregl from 'maplibre-gl';
 import { useTheme } from '../theme';
+import { EGYPT_BOUNDS, EGYPT_MIN_ZOOM, egyptBoundary, egyptMask } from './egypt';
 import { resolveMapStyle } from './mapStyle';
 import type { MapCameraState, MapProviderCapabilities, MarkerData, Region } from './types';
 
@@ -47,9 +48,29 @@ export function VectorMap({
       style: resolveMapStyle() as string | maplibregl.StyleSpecification,
       center: [region.longitude, region.latitude],
       zoom: region.zoom,
+      minZoom: EGYPT_MIN_ZOOM,
+      maxBounds: [EGYPT_BOUNDS.sw, EGYPT_BOUNDS.ne],
       attributionControl: { compact: true },
     });
     mapRef.current = map;
+
+    // "Coming soon" treatment: dim everything outside Egypt and outline it.
+    map.on('load', () => {
+      map.addSource('egypt-mask', { type: 'geojson', data: egyptMask });
+      map.addLayer({
+        id: 'egypt-mask-fill',
+        type: 'fill',
+        source: 'egypt-mask',
+        paint: { 'fill-color': theme.colors.onSurface, 'fill-opacity': 0.4 },
+      });
+      map.addSource('egypt-boundary', { type: 'geojson', data: egyptBoundary });
+      map.addLayer({
+        id: 'egypt-boundary-line',
+        type: 'line',
+        source: 'egypt-boundary',
+        paint: { 'line-color': theme.colors.primary, 'line-width': 1.5, 'line-opacity': 0.5 },
+      });
+    });
 
     if (showUserLocation) {
       map.addControl(

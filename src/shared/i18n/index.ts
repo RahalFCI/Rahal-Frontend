@@ -8,6 +8,7 @@ import { initReactI18next } from 'react-i18next';
 import common from './en/common.json';
 import auth from './en/auth.json';
 import places from './en/places.json';
+import vendors from './en/vendors.json';
 import gamification from './en/gamification.json';
 import rewards from './en/rewards.json';
 import social from './en/social.json';
@@ -18,13 +19,14 @@ const i18n = createInstance();
 i18n.use(initReactI18next).init({
   lng: 'en',
   fallbackLng: 'en',
-  ns: ['common', 'auth', 'places', 'gamification', 'rewards', 'social', 'payment'],
+  ns: ['common', 'auth', 'places', 'vendors', 'gamification', 'rewards', 'social', 'payment'],
   defaultNS: 'common',
   resources: {
     en: {
       common,
       auth,
       places,
+      vendors,
       gamification,
       rewards,
       social,

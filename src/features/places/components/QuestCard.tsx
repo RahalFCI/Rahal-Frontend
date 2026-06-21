@@ -1,17 +1,21 @@
 /**
- * QuestCard — the marker-tap quick-look. An archival "relic" entry surfaced
- * from the bottom of the map when an Explorer taps a curated place (CLAUDE.md
- * §3.2: gamification reads as a journal entry, not an arcade popup). Composes
- * the shared layout/components primitives; carries no data-fetching of its own.
+ * QuestCard — the marker-tap quick-look. An archival "relic" entry surfaced from
+ * the bottom of the map when an Explorer taps a curated place (CLAUDE.md §3.2:
+ * gamification reads as a journal entry, not an arcade popup). Tapping the body
+ * opens the full detail screen; non-vendor relics also expose a check-in action
+ * (the Phase 3 centerpiece). The map background tap dismisses it.
  */
 import { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Animated, Image, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { ChevronRight, ImageOff, MapPin } from 'lucide-react-native';
 import { Icon, LabelCaps, Text } from '../../../shared/components';
 import { RelicCard } from '../../../shared/layout';
 import { useTheme } from '../../../shared/theme';
+import { useCheckIn } from '../../gamification/hooks/useCheckIn';
+import { usePlacePhotos } from '../hooks/usePlacePhotos';
 import type { Place } from '../api/schemas';
 
 interface QuestCardProps {
@@ -30,8 +34,12 @@ function formatLocation(place: Place): string {
 export function QuestCard({ place, onClose }: QuestCardProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { t } = useTranslation('places');
   const anim = useRef(new Animated.Value(0)).current;
+  const { data: photos } = usePlacePhotos(place.id);
+  const thumbnail = photos?.[0]?.url;
+  const checkIn = useCheckIn();
 
   // Slide-and-fade up on mount and whenever the selected place changes.
   useEffect(() => {
@@ -44,10 +52,14 @@ export function QuestCard({ place, onClose }: QuestCardProps) {
   }, [place.id, anim]);
 
   const location = formatLocation(place);
-  const price =
-    place.ticketPrice && place.ticketPrice > 0
-      ? t('quest.priceValue', { price: place.ticketPrice })
-      : t('quest.priceFree');
+  const eyebrow = place.categoryName?.trim() || t('quest.curated');
+  // Vendor-operated relics check in through the vendor flow, not here (§ user note).
+  const canCheckIn = !place.vendorId;
+
+  function openDetail() {
+    onClose();
+    router.push({ pathname: '/(explorer)/place/[id]', params: { id: place.id } });
+  }
 
   return (
     <Animated.View
@@ -65,40 +77,75 @@ export function QuestCard({ place, onClose }: QuestCardProps) {
       ]}
     >
       <RelicCard style={[styles.card, theme.elevation.ambientShadow]}>
-        <View style={styles.headerRow}>
-          <LabelCaps style={{ color: theme.colors.primary }}>
-            {place.categoryName?.trim() || t('quest.curated')}
-          </LabelCaps>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('quest.viewDetails', { name: place.name })}
+          onPress={openDetail}
+        >
+          <View style={styles.row}>
+            <View
+              style={[styles.thumb, { backgroundColor: theme.colors.surfaceContainerHigh }]}
+            >
+              {thumbnail ? (
+                <Image source={{ uri: thumbnail }} style={styles.thumbImage} resizeMode="cover" />
+              ) : (
+                <Icon icon={ImageOff} size={22} color={theme.colors.onSurfaceVariant} />
+              )}
+            </View>
+
+            <View style={styles.body}>
+              <LabelCaps style={{ color: theme.colors.primary }} numberOfLines={1}>
+                {eyebrow}
+              </LabelCaps>
+              <Text variant="headlineSmall" className="mt-[2px]" numberOfLines={1}>
+                {place.name}
+              </Text>
+              {location ? (
+                <Text
+                  variant="bodyMedium"
+                  className="text-on-surface-variant mt-[2px]"
+                  numberOfLines={1}
+                >
+                  {location}
+                </Text>
+              ) : null}
+            </View>
+
+            <View
+              style={[styles.chevron, { backgroundColor: theme.colors.surfaceContainerHigh }]}
+              pointerEvents="none"
+            >
+              <Icon icon={ChevronRight} size={22} color={theme.colors.onSurfaceVariant} strokeWidth={2} />
+            </View>
+          </View>
+        </Pressable>
+
+        {canCheckIn ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('quest.close')}
-            hitSlop={12}
-            onPress={onClose}
+            accessibilityLabel={t('checkIn.action', { name: place.name })}
+            accessibilityState={{ disabled: checkIn.isPending }}
+            disabled={checkIn.isPending}
+            onPress={() => checkIn.mutate(place.id)}
+            android_ripple={{ color: theme.colors.onPrimary }}
+            // NOTE: a static style array is required here. A callback style
+            // (`({ pressed }) => [...]`) renders nothing under the New Architecture
+            // (Fabric) in this RN version — the Pressable silently lays out empty.
+            style={[
+              styles.checkInButton,
+              { backgroundColor: theme.colors.primary, opacity: checkIn.isPending ? 0.7 : 1 },
+            ]}
           >
-            <Icon icon={X} size={20} color={theme.colors.onSurfaceVariant} />
+            {checkIn.isPending ? (
+              <ActivityIndicator size="small" color={theme.colors.onPrimary} />
+            ) : (
+              <Icon icon={MapPin} size={18} color={theme.colors.onPrimary} strokeWidth={2} />
+            )}
+            <Text variant="bodyLarge" className="font-bold" style={{ color: theme.colors.onPrimary }}>
+              {checkIn.isPending ? t('checkIn.pending') : t('checkIn.label')}
+            </Text>
           </Pressable>
-        </View>
-
-        <Text variant="headlineSmall" className="mt-[4px]" numberOfLines={2}>
-          {place.name}
-        </Text>
-
-        {location ? (
-          <LabelCaps className="mt-[8px]">{location}</LabelCaps>
         ) : null}
-
-        {place.description?.trim() ? (
-          <Text variant="bodyMedium" className="text-on-surface-variant mt-[12px]" numberOfLines={2}>
-            {place.description}
-          </Text>
-        ) : null}
-
-        <View style={[styles.footerRow, { borderTopColor: theme.colors.outlineVariant }]}>
-          <LabelCaps>{t('quest.entry')}</LabelCaps>
-          <Text variant="bodyLarge" style={{ color: theme.colors.primary }} className="font-bold">
-            {price}
-          </Text>
-        </View>
       </RelicCard>
     </Animated.View>
   );
@@ -111,19 +158,43 @@ const styles = StyleSheet.create({
     right: 16,
   },
   card: {
-    paddingBottom: 12,
+    padding: 12,
   },
-  headerRow: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  footerRow: {
+  thumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  thumbImage: {
+    width: '100%',
+    height: '100%',
+  },
+  body: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  chevron: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  checkInButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    justifyContent: 'center',
+    gap: 8,
+    height: 48,
+    borderRadius: 12,
+    marginTop: 12,
   },
 });
