@@ -31,7 +31,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           route.name === 'edit-profile' ||
           route.name === 'place/[id]' ||
           route.name === 'badges' ||
-          route.name === 'badge/[id]'
+          route.name === 'badge/[id]' ||
+          route.name === 'coupon/[id]' ||
+          route.name === 'my-coupons'
         )
           return null;
         const { options } = descriptors[route.key];
@@ -96,6 +98,8 @@ export default function ExplorerLayout() {
         <Tabs.Screen name="place/[id]" options={{ href: null }} />
         <Tabs.Screen name="badges" options={{ href: null }} />
         <Tabs.Screen name="badge/[id]" options={{ href: null }} />
+        <Tabs.Screen name="coupon/[id]" options={{ href: null }} />
+        <Tabs.Screen name="my-coupons" options={{ href: null }} />
         <Tabs.Screen name="_dev-auth" options={{ href: null }} />
       </Tabs>
     </RewardOverlayProvider>

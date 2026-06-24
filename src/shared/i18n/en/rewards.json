@@ -1,7 +1,73 @@
 {
   "screen": {
     "rewards": {
-      "title": "Rewards"
+      "title": "Rewards",
+      "balance": "{{value}} XP available"
     }
+  },
+  "common": {
+    "back": "Back"
+  },
+  "coupon": {
+    "sectionTitle": "Coupons",
+    "empty": "No coupons catalogued yet",
+    "notFound": "This coupon is no longer available.",
+    "xpCost": "{{value}} XP",
+    "costLabel": "Cost",
+    "minimumLabel": "Minimum spend",
+    "minimumValue": "EGP {{value}}",
+    "expiryLabel": "Expiry",
+    "balanceLabel": "Your balance",
+    "discountPercentage": "{{value}}% off",
+    "discountFixed": "EGP {{value}} off",
+    "expired": "Expired",
+    "expiresToday": "Expires today",
+    "expiresInDays": "Expires in {{count}} days",
+    "expiresOn": "Expires {{date}}"
+  },
+  "eligibility": {
+    "INSUFFICIENT_XP": "Not enough XP",
+    "SOLD_OUT": "Sold out",
+    "EXPIRED": "Expired",
+    "INACTIVE": "Unavailable"
+  },
+  "claim": {
+    "cta": "Claim for XP",
+    "claiming": "Claiming…",
+    "success": "Claimed “{{title}}.” Find the code in My Coupons.",
+    "successGeneric": "Coupon claimed. Find the code in My Coupons.",
+    "alreadyClaimed": "You've already claimed this coupon.",
+    "error": "We couldn't claim this coupon. Please try again."
+  },
+  "wallet": {
+    "title": "My Coupons",
+    "link": "My Coupons",
+    "empty": "You haven't claimed any coupons yet.",
+    "untitled": "Coupon",
+    "codeLabel": "Code",
+    "status": {
+      "pending": "Pending",
+      "claimed": "Claimed",
+      "redeemed": "Redeemed",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    }
+  },
+  "premium": {
+    "sectionTitle": "Premium",
+    "empty": "No premium tiers available yet",
+    "perkMultiplier": "{{value}}× XP earnings",
+    "perkTravelPlans": "Up to {{count}} travel plans / week",
+    "priceXp": "{{value}} XP / week",
+    "purchaseCta": "Subscribe with XP",
+    "alreadyActive": "Active",
+    "activeBadge": "Premium active",
+    "activeGeneric": "Premium subscription",
+    "cancelCta": "Cancel subscription",
+    "purchaseSuccess": "“{{name}}” is now active.",
+    "purchaseSuccessGeneric": "Your premium subscription is now active.",
+    "purchaseError": "We couldn't complete the purchase. Please try again.",
+    "cancelSuccess": "Your subscription has been cancelled.",
+    "cancelError": "We couldn't cancel your subscription. Please try again."
   }
 }
