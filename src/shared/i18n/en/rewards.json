@@ -67,6 +67,7 @@
     "purchaseSuccess": "“{{name}}” is now active.",
     "purchaseSuccessGeneric": "Your premium subscription is now active.",
     "purchaseError": "We couldn't complete the purchase. Please try again.",
+    "alreadySubscribed": "You already have an active subscription.",
     "cancelSuccess": "Your subscription has been cancelled.",
     "cancelError": "We couldn't cancel your subscription. Please try again."
   }
