@@ -126,7 +126,7 @@ export function QuestCard({ place, onClose }: QuestCardProps) {
             accessibilityLabel={t('checkIn.action', { name: place.name })}
             accessibilityState={{ disabled: checkIn.isPending }}
             disabled={checkIn.isPending}
-            onPress={() => checkIn.mutate(place.id)}
+            onPress={() => checkIn.mutate({ placeId: place.id, placeName: place.name })}
             android_ripple={{ color: theme.colors.onPrimary }}
             // NOTE: a static style array is required here. A callback style
             // (`({ pressed }) => [...]`) renders nothing under the New Architecture

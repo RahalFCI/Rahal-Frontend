@@ -11,6 +11,7 @@ import { Pressable } from 'react-native';
 import { Text } from '../../src/shared/components/Text';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAuthStore } from '../../src/features/auth/store/authStore';
+import { RewardOverlayProvider } from '../../src/features/gamification/components/RewardOverlay';
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const theme = useTheme();
@@ -28,7 +29,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         if (
           route.name === '_dev-auth' ||
           route.name === 'edit-profile' ||
-          route.name === 'place/[id]'
+          route.name === 'place/[id]' ||
+          route.name === 'badges' ||
+          route.name === 'badge/[id]'
         )
           return null;
         const { options } = descriptors[route.key];
@@ -78,19 +81,23 @@ export default function ExplorerLayout() {
   }
 
   return (
-    <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Tabs.Screen name="index" options={{ title: t('tabs.discover') }} />
-      <Tabs.Screen name="journal" options={{ title: t('tabs.journal') }} />
-      <Tabs.Screen name="rewards" options={{ title: t('tabs.rewards') }} />
-      <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
-      <Tabs.Screen name="edit-profile" options={{ href: null }} />
-      <Tabs.Screen name="place/[id]" options={{ href: null }} />
-      <Tabs.Screen name="_dev-auth" options={{ href: null }} />
-    </Tabs>
+    <RewardOverlayProvider>
+      <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Tabs.Screen name="index" options={{ title: t('tabs.discover') }} />
+        <Tabs.Screen name="journal" options={{ title: t('tabs.journal') }} />
+        <Tabs.Screen name="rewards" options={{ title: t('tabs.rewards') }} />
+        <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
+        <Tabs.Screen name="edit-profile" options={{ href: null }} />
+        <Tabs.Screen name="place/[id]" options={{ href: null }} />
+        <Tabs.Screen name="badges" options={{ href: null }} />
+        <Tabs.Screen name="badge/[id]" options={{ href: null }} />
+        <Tabs.Screen name="_dev-auth" options={{ href: null }} />
+      </Tabs>
+    </RewardOverlayProvider>
   );
 }

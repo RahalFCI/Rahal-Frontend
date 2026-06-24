@@ -1,63 +1,36 @@
 /**
  * Profile screen — Explorer identity, gamification summary, and activity feed.
- * Figma: node 1:799. Real data: name, photo, level, XP from ExplorerProfile + UserStats.
- * Placeholder data (Phase 3 replaces): streak, visited count, badges, recent activity.
+ * Figma: node 1:799. All data is now live: identity from ExplorerProfile, XP/level
+ * derived from cumulative XP (CLAUDE.md §9 — backend has no XP→Level logic), stats
+ * from UserStats, badges from the catalog joined with earned achievements, and the
+ * recent-activity strip from the shared journal feed.
  *
  * Design deviations from Figma (design.md rules applied):
  * - Badge card borders removed (No-Line Rule); tonal bg shift used instead.
  * - Top bar separator line removed; tonal backdrop is enough.
  * - Locked badge desaturation via opacity-60 + surfaceContainerLow (RN platform limit).
- * - Badge amber bg (#FFFBEB) → bg-primary-container/20 (no new hex tokens).
  */
 import { View, ScrollView, Pressable, Image, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Star, Zap, MapPin, Trophy, ChevronRight, Pencil } from 'lucide-react-native';
+import { LogOut, Star, Zap, MapPin, ChevronRight, Pencil } from 'lucide-react-native';
 import { Surface } from '../../src/shared/components/Surface';
 import { Text } from '../../src/shared/components/Text';
 import { LabelCaps } from '../../src/shared/components/LabelCaps';
 import { useAuthStore } from '../../src/features/auth/store/authStore';
 import { useProfile } from '../../src/features/auth/hooks/useProfile';
 import { useSignOut } from '../../src/features/auth/hooks/useSignOut';
+import { useEarnedBadges, type BadgeEntry } from '../../src/features/gamification/hooks/useEarnedBadges';
+import { useJournalFeed, type JournalEntry } from '../../src/features/gamification/hooks/useJournalFeed';
+import { BadgeCard } from '../../src/features/gamification/components/BadgeCard';
+import { formatCatalogDate, formatXpSource } from '../../src/features/gamification/utils/format';
+import { levelFromXp } from '../../src/shared/gamification/leveling';
 import { ApiError } from '../../src/shared/api/errors';
 import { resolveMediaUrl } from '../../src/shared/utils/mediaUrl';
 import { tokens } from '../../src/shared/theme';
 import type { ExplorerProfileDto } from '../../src/features/auth/api/authApi';
-
-// --- Placeholder data (Phase 3: replace with real API calls) ---
-const PLACEHOLDER_STREAK = 12;
-const PLACEHOLDER_VISITED = 84;
-const PLACEHOLDER_BADGES = [
-  { id: '1', name: 'Pyramid Pro', subtitle: 'LVL 3 MASTER', locked: false },
-  { id: '2', name: 'Kushari King', subtitle: '12 PLACES VISITED', locked: false },
-  { id: '3', name: 'Hieroglyphist', subtitle: 'LOCKED', locked: true },
-  { id: '4', name: 'Nile Navigator', subtitle: '5 RIVER TRIPS', locked: false },
-];
-const PLACEHOLDER_ACTIVITY = [
-  {
-    id: '1',
-    title: 'Khan el-Khalili exploration',
-    subtitle: 'completed',
-    meta: 'YESTERDAY • +450 XP',
-    type: 'place' as const,
-  },
-  {
-    id: '2',
-    title: 'Achieved Pyramid Pro Badge',
-    subtitle: '',
-    meta: '2 DAYS AGO • ACHIEVEMENT',
-    type: 'badge' as const,
-  },
-  {
-    id: '3',
-    title: 'Visited Giza Plateau',
-    subtitle: '',
-    meta: '4 DAYS AGO • +200 XP',
-    type: 'place' as const,
-  },
-];
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -110,65 +83,14 @@ function StatCard({
   );
 }
 
-function BadgeCard({
-  name,
-  subtitle,
-  locked,
-}: {
-  name: string;
-  subtitle: string;
-  locked: boolean;
-}) {
-  return (
-    <View
-      className={`flex-1 items-center p-[17px] rounded-lg gap-[11px] ${
-        locked ? 'bg-surface-container-low opacity-60' : 'bg-surface-container-lowest'
-      }`}
-      style={
-        !locked
-          ? {
-              shadowColor: tokens.colors.onSurface,
-              shadowOffset: { width: 0, height: 10 },
-              shadowOpacity: 0.04,
-              shadowRadius: 20,
-              elevation: 2,
-            }
-          : undefined
-      }
-    >
-      <View
-        className={`w-[64px] h-[64px] rounded-xl items-center justify-center ${
-          locked ? 'bg-surface-container' : 'bg-primary-container/20'
-        }`}
-      >
-        <Trophy
-          size={28}
-          color={locked ? tokens.colors.onSurfaceVariant : tokens.colors.primary}
-          strokeWidth={1.5}
-        />
-      </View>
-      <View className="items-center gap-[2px]">
-        <Text variant="bodyMedium" className="font-bold text-on-surface text-center">
-          {name}
-        </Text>
-        <LabelCaps className={locked ? 'text-on-surface-variant' : 'text-primary'}>
-          {subtitle}
-        </LabelCaps>
-      </View>
-    </View>
-  );
-}
-
 function ActivityItem({
   title,
-  subtitle,
   meta,
-  type,
+  kind,
 }: {
   title: string;
-  subtitle: string;
   meta: string;
-  type: 'place' | 'badge';
+  kind: 'checkin' | 'xp';
 }) {
   return (
     <Surface
@@ -184,10 +106,10 @@ function ActivityItem({
     >
       <View
         className={`w-[48px] h-[48px] rounded-sm items-center justify-center ${
-          type === 'badge' ? 'bg-primary-container/20' : 'bg-surface-container'
+          kind === 'xp' ? 'bg-primary-container/20' : 'bg-surface-container'
         }`}
       >
-        {type === 'badge' ? (
+        {kind === 'xp' ? (
           <Zap size={20} color={tokens.colors.primary} strokeWidth={2} />
         ) : (
           <MapPin size={20} color={tokens.colors.onSurfaceVariant} strokeWidth={1.5} />
@@ -197,17 +119,11 @@ function ActivityItem({
       <View className="flex-1 min-w-0">
         <Text variant="bodyMedium" className="font-bold text-on-surface" numberOfLines={2}>
           {title}
-          {subtitle ? (
-            <Text variant="bodyMedium" className="font-normal text-on-surface">
-              {' '}
-              {subtitle}
-            </Text>
-          ) : null}
         </Text>
         <LabelCaps className="text-on-surface-variant mt-[2px]">{meta}</LabelCaps>
       </View>
 
-      {type === 'place' ? (
+      {kind === 'checkin' ? (
         <Star size={20} color={tokens.colors.primary} fill={tokens.colors.primary} />
       ) : (
         <ChevronRight size={16} color={tokens.colors.onSurfaceVariant} />
@@ -222,12 +138,14 @@ function ActivityItem({
 
 function TopBar({
   profile,
+  level,
   onLogout,
   onEdit,
   logoutLabel,
   editLabel,
 }: {
   profile: ExplorerProfileDto | undefined;
+  level: number | null;
   onLogout: () => void;
   onEdit: () => void;
   logoutLabel: string;
@@ -235,7 +153,7 @@ function TopBar({
 }) {
   const user = useAuthStore((s) => s.user);
   const initial = (profile?.name ?? user?.displayName ?? 'E')[0]?.toUpperCase() ?? 'E';
-  const levelDisplay = profile?.level != null ? `LVL ${profile.level}` : null;
+  const levelDisplay = level != null ? `LVL ${level}` : null;
   const avatarUri = resolveMediaUrl(profile?.profilePictureUrl);
 
   const barContent = (
@@ -302,6 +220,33 @@ function TopBar({
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Up to four badges for the profile grid: earned first, then nearest unearned. */
+function pickProfileBadges(entries: BadgeEntry[]): BadgeEntry[] {
+  const earned = entries.filter((e) => e.earned);
+  const unearned = entries.filter((e) => !e.earned);
+  return [...earned, ...unearned].slice(0, 4);
+}
+
+function activityTitle(entry: JournalEntry, fallbackPlace: string): string {
+  if (entry.kind === 'checkin') return entry.checkIn.placeName?.trim() || fallbackPlace;
+  return formatXpSource(entry.xp.sourceType);
+}
+
+function activityMeta(entry: JournalEntry): string {
+  const date = formatCatalogDate(
+    entry.kind === 'checkin' ? entry.checkIn.createdAt : entry.xp.createdAt,
+  );
+  if (entry.kind === 'xp') {
+    const xp = `+${entry.xp.amount.toLocaleString()} XP`;
+    return date ? `${date} • ${xp}` : xp;
+  }
+  return date;
+}
+
+// ---------------------------------------------------------------------------
 // Main screen
 // ---------------------------------------------------------------------------
 
@@ -315,15 +260,19 @@ export default function ProfileScreen() {
   const isProfileSetupRequired =
     error instanceof ApiError && error.code === 'PROFILE_SETUP_REQUIRED';
 
-  // XP progress within the current level.
-  // Approximation: each level requires 1000 XP. Phase 3: replace with real thresholds.
-  const levelXpRange = 1000;
-  const levelXpStart = profile ? profile.level * levelXpRange : 0;
-  const currentLevelXp = profile ? Math.max(0, profile.cumlativeXp - levelXpStart) : 0;
-  const progressPct = Math.min(1, currentLevelXp / levelXpRange);
+  const { entries: badgeEntries } = useEarnedBadges(user?.id);
+  const { entries: journalEntries } = useJournalFeed(user?.id);
 
+  // Level + progress derived from cumulative XP (CLAUDE.md §9).
+  const cumulativeXp = profile?.cumulativeXp ?? 0;
+  const levelInfo = levelFromXp(cumulativeXp);
+
+  const stats = profile?.stats;
   const birthYear = profile?.birthDate ? new Date(profile.birthDate).getFullYear() : null;
   const bioText = profile?.bio || null;
+
+  const profileBadges = pickProfileBadges(badgeEntries);
+  const recentActivity = journalEntries.slice(0, 3);
 
   return (
     <Surface tone="base" className="flex-1">
@@ -331,6 +280,7 @@ export default function ProfileScreen() {
         {/* Sticky glass top bar */}
         <TopBar
           profile={profile}
+          level={profile ? levelInfo.level : null}
           onLogout={signOut}
           onEdit={() => router.push('/(explorer)/edit-profile')}
           logoutLabel={t('profile.logout')}
@@ -449,16 +399,17 @@ export default function ProfileScreen() {
                   <View className="mt-[24px] gap-[8px]">
                     <View className="flex-row items-center justify-between">
                       <LabelCaps className="text-on-surface-variant">
-                        {t('profile.levelProgress', { level: profile.level })}
+                        {t('profile.levelProgress', { level: levelInfo.level })}
                       </LabelCaps>
                       <Text variant="labelSmall" className="text-primary font-bold">
-                        {currentLevelXp.toLocaleString()} / {levelXpRange.toLocaleString()} XP
+                        {levelInfo.currentLevelXp.toLocaleString()} /{' '}
+                        {levelInfo.xpForNextLevel.toLocaleString()} XP
                       </Text>
                     </View>
                     <View className="h-[12px] rounded-xl overflow-hidden bg-surface-container">
                       <View
                         className="h-full rounded-xl bg-primary"
-                        style={{ width: `${Math.round(progressPct * 100)}%` }}
+                        style={{ width: `${Math.round(levelInfo.progressPct * 100)}%` }}
                       />
                     </View>
                   </View>
@@ -468,16 +419,14 @@ export default function ProfileScreen() {
               {/* ── Stats bento ── */}
               <View className="gap-[16px]">
                 <View className="flex-row gap-[16px]">
+                  <StatCard value={cumulativeXp.toLocaleString()} label={t('profile.totalXp')} />
                   <StatCard
-                    value={(profile?.cumlativeXp ?? 0).toLocaleString()}
-                    label={t('profile.totalXp')}
+                    value={String(stats?.totalCheckIns ?? 0)}
+                    label={t('profile.visited')}
                   />
-                  {/* Phase 3: replace PLACEHOLDER_VISITED with real visited count */}
-                  <StatCard value={String(PLACEHOLDER_VISITED)} label={t('profile.visited')} />
                 </View>
-                {/* Phase 3: replace PLACEHOLDER_STREAK with real streak */}
                 <StatCard
-                  value={`${PLACEHOLDER_STREAK} ${t('profile.streakUnit')}`}
+                  value={`${stats?.currentStreak ?? 0} ${t('profile.streakUnit')}`}
                   label={t('profile.streak')}
                   fullWidth
                 />
@@ -489,23 +438,38 @@ export default function ProfileScreen() {
                   <Text variant="headlineSmall" className="font-bold text-on-surface">
                     {t('profile.badges')}
                   </Text>
-                  {/* Phase 3: navigate to badges screen */}
-                  <Text variant="bodyMedium" className="text-primary font-bold">
-                    {t('profile.badgeViewAll')}
-                  </Text>
+                  <Pressable onPress={() => router.push('/(explorer)/badges')}>
+                    <Text variant="bodyMedium" className="text-primary font-bold">
+                      {t('profile.badgeViewAll')}
+                    </Text>
+                  </Pressable>
                 </View>
 
-                {/* Phase 3: replace PLACEHOLDER_BADGES with real badge data */}
-                <View className="gap-[16px]">
-                  <View className="flex-row gap-[16px]">
-                    <BadgeCard {...PLACEHOLDER_BADGES[0]} />
-                    <BadgeCard {...PLACEHOLDER_BADGES[1]} />
+                {profileBadges.length === 0 ? (
+                  <Surface tone="lowest" className="p-[24px] rounded-lg">
+                    <LabelCaps className="text-on-surface-variant">
+                      {t('gamification:badges.empty')}
+                    </LabelCaps>
+                  </Surface>
+                ) : (
+                  <View className="flex-row flex-wrap gap-[16px]">
+                    {profileBadges.map((entry) => (
+                      <View key={entry.badge.id} className="w-[47%]">
+                        <BadgeCard
+                          name={entry.badge.name}
+                          subtitle={
+                            entry.earned
+                              ? formatCatalogDate(entry.awardedAt) || t('gamification:badges.earned')
+                              : t('gamification:badges.locked')
+                          }
+                          locked={!entry.earned}
+                          imageUrl={resolveMediaUrl(entry.badge.imageUrl)}
+                          onPress={() => router.push('/(explorer)/badges')}
+                        />
+                      </View>
+                    ))}
                   </View>
-                  <View className="flex-row gap-[16px]">
-                    <BadgeCard {...PLACEHOLDER_BADGES[2]} />
-                    <BadgeCard {...PLACEHOLDER_BADGES[3]} />
-                  </View>
-                </View>
+                )}
               </View>
 
               {/* ── Recent activity ── */}
@@ -513,12 +477,24 @@ export default function ProfileScreen() {
                 <Text variant="headlineSmall" className="font-bold text-on-surface">
                   {t('profile.recentActivity')}
                 </Text>
-                {/* Phase 3: replace PLACEHOLDER_ACTIVITY with real activity feed */}
-                <View className="gap-[16px]">
-                  {PLACEHOLDER_ACTIVITY.map((item) => (
-                    <ActivityItem key={item.id} {...item} />
-                  ))}
-                </View>
+                {recentActivity.length === 0 ? (
+                  <Surface tone="lowest" className="p-[24px] rounded-lg">
+                    <LabelCaps className="text-on-surface-variant">
+                      {t('gamification:journal.empty')}
+                    </LabelCaps>
+                  </Surface>
+                ) : (
+                  <View className="gap-[16px]">
+                    {recentActivity.map((entry) => (
+                      <ActivityItem
+                        key={entry.id}
+                        title={activityTitle(entry, t('gamification:journal.checkInFallback'))}
+                        meta={activityMeta(entry)}
+                        kind={entry.kind}
+                      />
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
           )}

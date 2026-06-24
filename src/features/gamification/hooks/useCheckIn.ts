@@ -12,9 +12,12 @@ import * as Location from 'expo-location';
 import { ApiError, errorMap } from '../../../shared/api';
 import { useToast } from '../../../shared/components/Toast';
 import { useAuthStore } from '../../auth/store/authStore';
+import { getExplorerProfile, type ExplorerProfileDto } from '../../auth/api/authApi';
 import i18n from '../../../shared/i18n';
+import { didLevelUp, levelFromXp } from '../../../shared/gamification/leveling';
 import { createCheckIn } from '../api/checkInApi';
-import type { CheckIn } from '../api/schemas';
+import { useRewardOverlay } from '../components/RewardOverlay';
+import { gamificationKeys } from './keys';
 
 /** Raised when we can't obtain a location fix — distinct from a server rejection. */
 class LocationUnavailableError extends Error {
@@ -23,6 +26,15 @@ class LocationUnavailableError extends Error {
     this.name = 'LocationUnavailableError';
   }
 }
+
+/** What the check-in entry points pass in. The place name powers the success toast
+ *  (the backend success response no longer carries it). */
+interface CheckInVars {
+  placeId: string;
+  placeName?: string;
+}
+
+const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 interface CheckInFix {
   latitude: number;
@@ -68,9 +80,10 @@ export function useCheckIn() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const explorerId = useAuthStore((s) => s.user?.id);
+  const showReward = useRewardOverlay();
 
-  return useMutation<CheckIn, unknown, string>({
-    mutationFn: async (placeId: string) => {
+  return useMutation<string, unknown, CheckInVars>({
+    mutationFn: async ({ placeId }: CheckInVars) => {
       if (!explorerId) throw new ApiError('UNAUTHORIZED', 'No explorer session', 401);
       const fix = await captureFix();
       return createCheckIn(explorerId, {
@@ -83,8 +96,8 @@ export function useCheckIn() {
         isJailbroken: false,
       });
     },
-    onSuccess: (checkIn, placeId) => {
-      const name = checkIn.placeName?.trim();
+    onSuccess: async (_message, { placeId, placeName }) => {
+      const name = placeName?.trim();
       toast.show(
         name
           ? i18n.t('places:checkIn.success', { name })
@@ -92,6 +105,47 @@ export function useCheckIn() {
       );
       // Refresh anything keyed on this place's check-in state.
       queryClient.invalidateQueries({ queryKey: ['checkin', placeId] });
+      if (!explorerId) return;
+
+      // XP and stats are awarded ASYNCHRONOUSLY by a backend consumer (the POST
+      // returns before the XP transaction is written), so an immediate refetch
+      // usually reads stale XP. Poll a few times until cumulativeXp reflects the
+      // award, then drive the beacon/level-up from the real, observed delta.
+      const profileKey = ['profile', explorerId];
+      const previous = queryClient.getQueryData<ExplorerProfileDto>(profileKey);
+      const baselineXp = previous ? (previous.cumulativeXp ?? 0) : null;
+
+      let fresh: ExplorerProfileDto | null = null;
+      try {
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+          await delay(800);
+          fresh = await getExplorerProfile(explorerId);
+          queryClient.setQueryData(profileKey, fresh);
+          // No baseline to compare against → a single refresh is all we can do.
+          if (baselineXp == null) break;
+          if ((fresh.cumulativeXp ?? 0) > baselineXp) break;
+        }
+      } catch {
+        // A failed profile refresh shouldn't surface — the check-in itself succeeded.
+      }
+
+      // Refresh the gamification surfaces now that the award has (likely) landed.
+      queryClient.invalidateQueries({ queryKey: gamificationKeys.xp(explorerId) });
+      queryClient.invalidateQueries({ queryKey: gamificationKeys.checkInHistory(explorerId) });
+      queryClient.invalidateQueries({ queryKey: gamificationKeys.explorerAchievements(explorerId) });
+
+      // Reward feedback only on an observed XP gain (skip when there's no cached
+      // baseline, or the award never landed within the polling window).
+      if (fresh && baselineXp != null) {
+        const nextXp = fresh.cumulativeXp ?? 0;
+        if (nextXp > baselineXp) {
+          showReward({
+            xpGained: nextXp - baselineXp,
+            leveledUp: didLevelUp(baselineXp, nextXp),
+            newLevel: levelFromXp(nextXp).level,
+          });
+        }
+      }
     },
     onError: (error) => {
       toast.show(messageForError(error));

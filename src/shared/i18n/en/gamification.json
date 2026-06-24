@@ -3,5 +3,58 @@
     "journal": {
       "title": "Journal"
     }
+  },
+  "common": {
+    "back": "Back"
+  },
+  "date": {
+    "today": "TODAY",
+    "yesterday": "YESTERDAY",
+    "daysAgo": "{{count}} DAYS AGO"
+  },
+  "xp": {
+    "beaconLabel": "ENTERED INTO THE JOURNAL",
+    "source": {
+      "checkin": "Check-in reward",
+      "achievement": "Achievement unlocked",
+      "challenge": "Challenge completed",
+      "socialmediapost": "Shared a discovery",
+      "bonus": "Bonus XP",
+      "checkininvalidated": "Check-in reversed",
+      "achievementrevoked": "Achievement revoked",
+      "challengerevoked": "Challenge revoked",
+      "badgerevoked": "Badge revoked",
+      "unknown": "XP adjustment"
+    }
+  },
+  "journal": {
+    "checkInFallback": "A new place, catalogued",
+    "emptyTitle": "Your journal is empty",
+    "emptyBody": "Check in at a place to begin your catalogue of exploration.",
+    "errorTitle": "Couldn't load your journal",
+    "errorBody": "Pull to refresh, or try again in a moment.",
+    "empty": "No entries yet — your exploration begins with a check-in."
+  },
+  "badges": {
+    "title": "Badges",
+    "earned": "EARNED",
+    "locked": "LOCKED",
+    "cataloged": "CATALOGUED",
+    "empty": "No badges in the archive yet.",
+    "notFound": "This badge isn't in the archive."
+  },
+  "achievements": {
+    "title": "Achievements",
+    "earned": "EARNED",
+    "xpReward": "{{xp}} XP REWARD",
+    "progress": "PROGRESS",
+    "empty": "No achievements have been catalogued yet."
+  },
+  "levelUp": {
+    "eyebrow": "A NEW RELIC TITLE",
+    "title": "Level {{level}}",
+    "body": "Your standing in the field of exploration has advanced.",
+    "dismiss": "Dismiss",
+    "dismissHint": "TAP TO CONTINUE"
   }
 }
