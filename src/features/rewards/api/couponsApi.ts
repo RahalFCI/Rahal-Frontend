@@ -6,13 +6,7 @@
 import { apiClient } from '../../../shared/api/client';
 import { zodParse } from '../../../shared/api';
 import { couponEndpoints } from './endpoints';
-import {
-  couponSchema,
-  couponSearchResultSchema,
-  pagedCouponsSchema,
-  type Coupon,
-  type PagedCoupons,
-} from './schemas';
+import { couponSchema, pagedCouponsSchema, type Coupon, type PagedCoupons } from './schemas';
 
 export interface GetCouponsParams {
   page?: number;
@@ -37,14 +31,4 @@ export async function getCoupon(id: string): Promise<Coupon> {
     url: couponEndpoints.byId(id),
   });
   return zodParse(couponSchema, data);
-}
-
-/** Full-text coupon search. Normalizes the `SearchResult.hits` envelope to a flat list. */
-export async function searchCoupons(query: string): Promise<Coupon[]> {
-  const data = await apiClient<unknown>({
-    method: 'GET',
-    url: couponEndpoints.search,
-    params: { query },
-  });
-  return zodParse(couponSearchResultSchema, data).hits;
 }

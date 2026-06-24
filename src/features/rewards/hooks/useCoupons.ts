@@ -1,28 +1,23 @@
 /**
- * useCoupons — the coupon catalog for the rewards screen. A non-empty query runs
- * full-text search; otherwise the default paged list. Both normalize to a flat
- * `coupons` array so the screen is agnostic to the source (mirrors
- * `useDiscoverPlaces`).
+ * useCoupons — the active coupon catalog for the rewards screen. Inactive coupons
+ * (admin-archived) are filtered out, mirroring `usePlanTiers`. Normalizes the paged
+ * response to a flat `coupons` array so the screen is agnostic to the source.
  */
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getCoupons, searchCoupons } from '../api/couponsApi';
-import type { Coupon } from '../api/schemas';
+import { getCoupons } from '../api/couponsApi';
 import { rewardsKeys } from './keys';
 
-export function useCoupons(query = '') {
-  const trimmed = query.trim();
-  const isSearching = trimmed.length > 0;
-
-  const result = useQuery({
-    queryKey: isSearching ? rewardsKeys.coupons.search(trimmed) : rewardsKeys.coupons.catalog,
-    queryFn: async (): Promise<Coupon[]> => {
-      if (isSearching) return searchCoupons(trimmed);
-      return (await getCoupons()).items;
-    },
+export function useCoupons() {
+  const query = useQuery({
+    queryKey: rewardsKeys.coupons.catalog,
+    queryFn: async () => (await getCoupons()).items,
   });
 
-  // Guard against a persisted cache restoring a non-array shape under this key.
-  const coupons = useMemo(() => (Array.isArray(result.data) ? result.data : []), [result.data]);
-  return { ...result, coupons };
+  // Guard against a persisted cache restoring a non-array shape, then drop inactive.
+  const coupons = useMemo(
+    () => (Array.isArray(query.data) ? query.data : []).filter((coupon) => coupon.isActive),
+    [query.data],
+  );
+  return { ...query, coupons };
 }

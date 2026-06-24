@@ -4,7 +4,7 @@
  * (buy with XP). Editorial treatment per CLAUDE.md §3.2 — a journal of rewards,
  * not a storefront.
  */
-import { View, ScrollView, ActivityIndicator, Pressable } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +40,17 @@ export default function RewardsScreen() {
 
   const isPremium =
     activeSubscription?.status === 'Active' || activeSubscription?.status === 'Pending';
+
+  const confirmCancel = () => {
+    Alert.alert(t('premium.cancelConfirmTitle'), t('premium.cancelConfirmBody'), [
+      { text: t('premium.cancelConfirmDismiss'), style: 'cancel' },
+      {
+        text: t('premium.cancelConfirmConfirm'),
+        style: 'destructive',
+        onPress: () => cancel.mutate(),
+      },
+    ]);
+  };
 
   return (
     <Surface tone="base" className="flex-1">
@@ -110,7 +121,7 @@ export default function RewardsScreen() {
                   {activeSubscription?.planTierName || t('premium.activeGeneric')}
                 </Text>
                 <Pressable
-                  onPress={() => cancel.mutate()}
+                  onPress={confirmCancel}
                   disabled={cancel.isPending}
                   accessibilityRole="button"
                 >

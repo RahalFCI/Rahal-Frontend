@@ -79,19 +79,6 @@ export const subscriptionSchema = z.object({
   cancelledAt: z.string().nullish(),
 });
 
-/**
- * SearchResult<GetCouponDto> — the `/Coupon/search` envelope differs from
- * `PagedResult`: hits live under `hits`, the count under `totalHits`.
- */
-export const couponSearchResultSchema = z.object({
-  hits: z.array(couponSchema),
-  totalHits: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-  totalPages: z.number(),
-  hasMore: z.boolean(),
-});
-
 export type Coupon = z.infer<typeof couponSchema>;
 export type UserCoupon = z.infer<typeof userCouponSchema>;
 export type PlanTier = z.infer<typeof planTierSchema>;

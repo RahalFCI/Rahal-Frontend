@@ -7,8 +7,6 @@
 export const couponEndpoints = {
   list: '/Coupon',
   byId: (id: string) => `/Coupon/${id}`,
-  /** Full-text search — returns a `SearchResult<T>` (`hits`), not a `PagedResult`. */
-  search: '/Coupon/search',
 } as const;
 
 export const userCouponEndpoints = {
