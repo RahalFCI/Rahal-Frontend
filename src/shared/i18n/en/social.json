@@ -1,3 +1,69 @@
 {
-  "placeholder": "Social features coming soon"
+  "feed": {
+    "title": "Field Notes",
+    "empty": "No entries yet",
+    "emptyHint": "Follow fellow explorers, or share the first note.",
+    "discover": "Find explorers"
+  },
+  "post": {
+    "placeholder": "Share a note from your travels…",
+    "submit": "Post",
+    "posting": "Posting…",
+    "uploadingHint": "Uploading media and publishing…",
+    "addImage": "Add image ({{count}}/{{max}})",
+    "removeImage": "Remove image",
+    "created": "Posted.",
+    "createFailed": "We couldn't publish your post. Please try again.",
+    "deleted": "Post removed.",
+    "deleteFailed": "We couldn't remove this post. Please try again.",
+    "deleteConfirmTitle": "Remove post?",
+    "deleteConfirmBody": "This note will be removed from your journal and others' feeds.",
+    "deleteConfirmDismiss": "Keep",
+    "deleteConfirmConfirm": "Remove",
+    "detailTitle": "Note",
+    "menuDelete": "Delete post"
+  },
+  "comment": {
+    "sectionTitle": "Comments",
+    "placeholder": "Add a comment…",
+    "replyPlaceholder": "Write a reply…",
+    "send": "Send",
+    "cancel": "Cancel",
+    "reply": "Reply",
+    "replyingTo": "Replying to {{name}}",
+    "edit": "Edit",
+    "delete": "Delete",
+    "edited": "Comment updated.",
+    "empty": "No comments yet. Start the thread.",
+    "viewReplies": "View {{count}} replies",
+    "viewReplies_one": "View {{count}} reply",
+    "hideReplies": "Hide replies",
+    "deleteConfirmTitle": "Delete comment?",
+    "deleteConfirmBody": "This comment will be removed.",
+    "deleteConfirmDismiss": "Keep",
+    "deleteConfirmConfirm": "Delete",
+    "createFailed": "We couldn't post your comment. Please try again.",
+    "editFailed": "We couldn't update your comment. Please try again.",
+    "deleteFailed": "We couldn't delete your comment. Please try again."
+  },
+  "user": {
+    "follow": "Follow",
+    "unfollow": "Following",
+    "unknown": "Explorer",
+    "followers": "Followers",
+    "following": "Following",
+    "posts": "Notes",
+    "followersCount": "{{value}} followers",
+    "followingCount": "{{value}} following",
+    "noPosts": "No notes yet.",
+    "discoverTitle": "Explorers",
+    "discoverEmpty": "No explorers to show yet.",
+    "followersEmpty": "No followers yet.",
+    "followingEmpty": "Not following anyone yet."
+  },
+  "error": {
+    "likeFailed": "We couldn't register that. Please try again.",
+    "followFailed": "We couldn't update following. Please try again.",
+    "notFound": "This content is no longer available."
+  }
 }

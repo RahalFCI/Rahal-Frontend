@@ -4,7 +4,7 @@
  */
 import { Redirect, Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Compass, BookOpen, Gift, User } from 'lucide-react-native';
+import { Compass, BookOpen, Newspaper, Gift, User } from 'lucide-react-native';
 import { ArchivistBar } from '../../src/shared/layout/ArchivistBar';
 import { useTheme } from '../../src/shared/theme';
 import { Pressable } from 'react-native';
@@ -19,6 +19,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const icons = {
     index: Compass,
     journal: BookOpen,
+    social: Newspaper,
     rewards: Gift,
     profile: User,
   };
@@ -33,7 +34,13 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           route.name === 'badges' ||
           route.name === 'badge/[id]' ||
           route.name === 'coupon/[id]' ||
-          route.name === 'my-coupons'
+          route.name === 'my-coupons' ||
+          route.name === 'social/[id]' ||
+          route.name === 'social/compose' ||
+          route.name === 'social/discover' ||
+          route.name === 'user/[id]' ||
+          route.name === 'user/[id]/followers' ||
+          route.name === 'user/[id]/following'
         )
           return null;
         const { options } = descriptors[route.key];
@@ -92,6 +99,7 @@ export default function ExplorerLayout() {
       >
         <Tabs.Screen name="index" options={{ title: t('tabs.discover') }} />
         <Tabs.Screen name="journal" options={{ title: t('tabs.journal') }} />
+        <Tabs.Screen name="social" options={{ title: t('tabs.social') }} />
         <Tabs.Screen name="rewards" options={{ title: t('tabs.rewards') }} />
         <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
         <Tabs.Screen name="edit-profile" options={{ href: null }} />
@@ -100,6 +108,12 @@ export default function ExplorerLayout() {
         <Tabs.Screen name="badge/[id]" options={{ href: null }} />
         <Tabs.Screen name="coupon/[id]" options={{ href: null }} />
         <Tabs.Screen name="my-coupons" options={{ href: null }} />
+        <Tabs.Screen name="social/[id]" options={{ href: null }} />
+        <Tabs.Screen name="social/compose" options={{ href: null }} />
+        <Tabs.Screen name="social/discover" options={{ href: null }} />
+        <Tabs.Screen name="user/[id]" options={{ href: null }} />
+        <Tabs.Screen name="user/[id]/followers" options={{ href: null }} />
+        <Tabs.Screen name="user/[id]/following" options={{ href: null }} />
         <Tabs.Screen name="_dev-auth" options={{ href: null }} />
       </Tabs>
     </RewardOverlayProvider>
