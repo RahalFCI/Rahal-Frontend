@@ -1,3 +1,12 @@
 {
-  "placeholder": "Payment features coming soon"
+  "card": {
+    "payWithCard": "Pay with card",
+    "priceLabel": "{{value}} {{currency}} / week",
+    "processing": "Opening secure checkout…",
+    "success": "Payment complete — welcome to premium.",
+    "canceled": "Checkout cancelled."
+  },
+  "error": {
+    "failed": "The payment couldn't be completed. Please try again."
+  }
 }

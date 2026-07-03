@@ -13,6 +13,8 @@ import { queryClient, asyncStoragePersister } from '../src/shared/api/queryClien
 import { useAuthStore } from '../src/features/auth/store/authStore';
 import { setAuthStoreRef, setRefreshFn } from '../src/shared/api/refreshInterceptor';
 import { refreshTokens } from '../src/features/auth/api/authApi';
+import { StripeProvider } from '@stripe/stripe-react-native';
+import { env } from '../src/config/env';
 import { ToastProvider } from '../src/shared/components/Toast';
 import { NotificationsBridge } from '../src/features/notifications/components/NotificationsBridge';
 import '../src/shared/i18n';
@@ -59,9 +61,14 @@ export default function RootLayout() {
     >
       <SafeAreaProvider>
         <ToastProvider>
-          <StatusBar style="dark" />
-          <Slot />
-          <NotificationsBridge />
+          <StripeProvider
+            publishableKey={env.STRIPE_PUBLISHABLE_KEY}
+            merchantIdentifier="merchant.com.rahal.app"
+          >
+            <StatusBar style="dark" />
+            <Slot />
+            <NotificationsBridge />
+          </StripeProvider>
         </ToastProvider>
       </SafeAreaProvider>
     </PersistQueryClientProvider>

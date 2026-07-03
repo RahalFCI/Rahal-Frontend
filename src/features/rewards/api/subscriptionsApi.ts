@@ -29,20 +29,30 @@ export async function getPlanTiers({
   return zodParse(pagedPlanTiersSchema, data);
 }
 
-/** SubscriptionPaymentMethod enum: Xp = 0, Visa = 1. v1 only supports XP. */
+/** SubscriptionPaymentMethod enum: Xp = 0, Visa = 1. */
 export const SubscriptionPaymentMethod = { Xp: 0, Visa: 1 } as const;
+export type SubscriptionPaymentMethodValue =
+  (typeof SubscriptionPaymentMethod)[keyof typeof SubscriptionPaymentMethod];
 
 export interface PurchaseSubscriptionParams {
   planTierId: string;
+  /**
+   * How the subscription is paid for. Defaults to XP (the in-app currency path).
+   * `Visa` activates premium after a real card charge collected via Stripe on the
+   * client (see `useActivatePremiumWithCard`) — the backend grants premium
+   * synchronously and does not itself take a card.
+   */
+  paymentMethod?: SubscriptionPaymentMethodValue;
 }
 
 export async function purchaseSubscription({
   planTierId,
+  paymentMethod = SubscriptionPaymentMethod.Xp,
 }: PurchaseSubscriptionParams): Promise<Subscription> {
   const data = await apiClient<unknown>({
     method: 'POST',
     url: subscriptionEndpoints.purchase,
-    data: { planTierId, paymentMethod: SubscriptionPaymentMethod.Xp },
+    data: { planTierId, paymentMethod },
   });
   return zodParse(subscriptionSchema, data);
 }

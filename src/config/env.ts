@@ -66,6 +66,19 @@ export const env = {
     (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID as string | undefined)?.trim() ?? '',
 
   /**
+   * Stripe publishable key (pk_test_… / pk_live_…). OPTIONAL: the backend's
+   * `/payments/test-intent` response already returns the publishable key, and the
+   * card-checkout flow re-inits Stripe with it before presenting the sheet — so the
+   * demo needs no frontend key. Set this only to seed StripeProvider up-front.
+   */
+  STRIPE_PUBLISHABLE_KEY:
+    (process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY as string | undefined)?.trim() ?? '',
+
+  /** Currency (lowercase Stripe code) used when creating premium card payments. */
+  PAYMENT_CURRENCY:
+    (process.env.EXPO_PUBLIC_PAYMENT_CURRENCY as string | undefined)?.trim() || 'usd',
+
+  /**
    * Optional hosted MapLibre style URL. When set (e.g. a MapTiler-authored
    * Solar Minimalist style), it OVERRIDES the bundled hand-tuned skin in
    * `shared/map/theme.json`. Leave unset to use the local skin. This is the seam

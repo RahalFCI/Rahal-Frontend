@@ -4,10 +4,17 @@
  */
 const mockDataEnv = process.env.EXPO_PUBLIC_MOCK_DATA;
 const pushEnv = process.env.EXPO_PUBLIC_PUSH;
+const paymentEnv = process.env.EXPO_PUBLIC_PAYMENTS;
 
 export const flags = {
   social: false,
-  payment: false,
+  /**
+   * Payments feature (Stripe card → premium upgrade). On by default in dev so the
+   * "Pay with card" path on premium tiers is demoable; set EXPO_PUBLIC_PAYMENTS="false"
+   * to force off, or "true" in any build. Requires the Stripe native module (dev-client
+   * rebuild); the publishable key comes from the backend test-intent response.
+   */
+  payment: paymentEnv === 'true' || (paymentEnv !== 'false' && __DEV__),
   /**
    * Notifications feature (in-app center + unread badges + FCM push registration).
    * On by default in dev so the notifications center/badges are demoable; set

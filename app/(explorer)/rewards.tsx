@@ -14,15 +14,20 @@ import { Text } from '../../src/shared/components/Text';
 import { LabelCaps } from '../../src/shared/components/LabelCaps';
 import { OffsetHeadline } from '../../src/shared/layout/OffsetHeadline';
 import { tokens } from '../../src/shared/theme';
+import { flags } from '../../src/config/flags';
+import { env } from '../../src/config/env';
 import { useAuthStore } from '../../src/features/auth/store/authStore';
 import { useProfile } from '../../src/features/auth/hooks/useProfile';
 import { useCoupons } from '../../src/features/rewards/hooks/useCoupons';
 import { usePlanTiers } from '../../src/features/rewards/hooks/usePlanTiers';
 import { useActiveSubscription } from '../../src/features/rewards/hooks/useActiveSubscription';
 import { usePurchaseSubscription } from '../../src/features/rewards/hooks/usePurchaseSubscription';
+import { useActivatePremiumWithCard } from '../../src/features/rewards/hooks/useActivatePremiumWithCard';
 import { useCancelSubscription } from '../../src/features/rewards/hooks/useCancelSubscription';
+import { useCardCheckout } from '../../src/features/payment/hooks/useCardCheckout';
 import { CouponCard } from '../../src/features/rewards/components/CouponCard';
 import { PlanTierCard } from '../../src/features/rewards/components/PlanTierCard';
+import type { PlanTier } from '../../src/features/rewards/api/schemas';
 
 export default function RewardsScreen() {
   const router = useRouter();
@@ -37,9 +42,39 @@ export default function RewardsScreen() {
   const { data: activeSubscription } = useActiveSubscription();
   const purchase = usePurchaseSubscription();
   const cancel = useCancelSubscription();
+  const cardCheckout = useCardCheckout();
+  const activatePremiumWithCard = useActivatePremiumWithCard();
 
   const isPremium =
     activeSubscription?.status === 'Active' || activeSubscription?.status === 'Pending';
+
+  const cardPending = cardCheckout.isPending || activatePremiumWithCard.isPending;
+
+  // Collect a card payment via Stripe (using the tier's cash price), then — on a
+  // successful charge — activate premium. The backend doesn't link the two, so the
+  // Rewards screen composes them: charge, then grant. See the payment feature.
+  const payWithCard = async (tier: PlanTier) => {
+    if (!userId || tier.weeklyPrice == null) return;
+    const result = await cardCheckout
+      .mutateAsync({
+        userId,
+        amount: tier.weeklyPrice,
+        currency: env.PAYMENT_CURRENCY,
+        referenceId: tier.id,
+      })
+      .catch(() => 'failed' as const);
+    if (result === 'succeeded') {
+      activatePremiumWithCard.mutate({ planTierId: tier.id, planTierName: tier.name });
+    }
+  };
+
+  const cardPriceLabel = (tier: PlanTier) =>
+    tier.weeklyPrice != null
+      ? t('payment:card.priceLabel', {
+          value: tier.weeklyPrice,
+          currency: env.PAYMENT_CURRENCY.toUpperCase(),
+        })
+      : undefined;
 
   const confirmCancel = () => {
     Alert.alert(t('premium.cancelConfirmTitle'), t('premium.cancelConfirmBody'), [
@@ -142,18 +177,24 @@ export default function RewardsScreen() {
               </Surface>
             ) : (
               <View className="px-[24px] gap-[16px]">
-                {planTiers.map((tier) => (
-                  <PlanTierCard
-                    key={tier.id}
-                    planTier={tier}
-                    availableXp={availableXp}
-                    isCurrentPremium={isPremium}
-                    pending={purchase.isPending}
-                    onPurchase={() =>
-                      purchase.mutate({ planTierId: tier.id, planTierName: tier.name })
-                    }
-                  />
-                ))}
+                {planTiers.map((tier) => {
+                  const cardEnabled = flags.payment && tier.weeklyPrice != null;
+                  return (
+                    <PlanTierCard
+                      key={tier.id}
+                      planTier={tier}
+                      availableXp={availableXp}
+                      isCurrentPremium={isPremium}
+                      pending={purchase.isPending}
+                      onPurchase={() =>
+                        purchase.mutate({ planTierId: tier.id, planTierName: tier.name })
+                      }
+                      onPayWithCard={cardEnabled ? () => payWithCard(tier) : undefined}
+                      cardPriceLabel={cardEnabled ? cardPriceLabel(tier) : undefined}
+                      cardPending={cardPending}
+                    />
+                  );
+                })}
               </View>
             )}
           </View>

@@ -30,6 +30,7 @@ export type ErrorCode =
   | 'USER_NOT_AT_LOCATION'
   | 'IMPOSSIBLE_TRAVEL'
   | 'LOCATION_SPOOFING_DETECTED'
+  | 'PAYMENT_FAILED'
   | 'UNKNOWN';
 
 interface ErrorMapping {
@@ -54,6 +55,7 @@ export const errorMap: Record<ErrorCode, ErrorMapping> = {
   USER_NOT_AT_LOCATION: { messageKey: 'places:error.userNotAtLocation', tier: 'toast' },
   IMPOSSIBLE_TRAVEL: { messageKey: 'places:error.impossibleTravel', tier: 'screen' },
   LOCATION_SPOOFING_DETECTED: { messageKey: 'places:error.locationSpoofingDetected', tier: 'screen' },
+  PAYMENT_FAILED: { messageKey: 'payment:error.failed', tier: 'toast' },
   UNKNOWN: { messageKey: 'common:error.unknown', tier: 'screen' },
 };
 
