@@ -24,7 +24,7 @@ export function PostMedia({ urls }: PostMediaProps) {
     const url = media[0];
     if (isVideo(url)) {
       return (
-        <View className="w-full h-[200px] rounded-lg bg-surface-container items-center justify-center">
+        <View className="w-full h-[200px] rounded-xl bg-surface-container items-center justify-center">
           <LabelCaps className="text-on-surface-variant">Video</LabelCaps>
         </View>
       );
@@ -32,7 +32,7 @@ export function PostMedia({ urls }: PostMediaProps) {
     return (
       <Image
         source={{ uri: url }}
-        className="w-full h-[240px] rounded-lg bg-surface-container"
+        className="w-full h-[240px] rounded-xl bg-surface-container"
         resizeMode="cover"
       />
     );
@@ -43,13 +43,13 @@ export function PostMedia({ urls }: PostMediaProps) {
       {media.slice(0, 3).map((url) => (
         <View key={url} className="flex-1">
           {isVideo(url) ? (
-            <View className="w-full h-[110px] rounded-lg bg-surface-container items-center justify-center">
+            <View className="w-full h-[110px] rounded-xl bg-surface-container items-center justify-center">
               <LabelCaps className="text-on-surface-variant">Video</LabelCaps>
             </View>
           ) : (
             <Image
               source={{ uri: url }}
-              className="w-full h-[110px] rounded-lg bg-surface-container"
+              className="w-full h-[110px] rounded-xl bg-surface-container"
               resizeMode="cover"
             />
           )}

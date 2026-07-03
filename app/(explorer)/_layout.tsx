@@ -13,8 +13,24 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAuthStore } from '../../src/features/auth/store/authStore';
 import { RewardOverlayProvider } from '../../src/features/gamification/components/RewardOverlay';
 
+// Full-screen detail routes that should not show the floating ArchivistBar
+// (they have their own back navigation and bottom-pinned UI like composers).
+const HIDE_BAR_ROUTES = new Set([
+  'social/[id]',
+  'social/compose',
+  'social/discover',
+  'user/[id]',
+  'user/[id]/followers',
+  'user/[id]/following',
+]);
+
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const theme = useTheme();
+
+  const activeRouteName = state.routes[state.index]?.name;
+  if (activeRouteName && HIDE_BAR_ROUTES.has(activeRouteName)) {
+    return null;
+  }
 
   const icons = {
     index: Compass,
@@ -29,6 +45,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
       {state.routes.map((route, index) => {
         if (
           route.name === '_dev-auth' ||
+          route.name === 'notifications' ||
           route.name === 'edit-profile' ||
           route.name === 'place/[id]' ||
           route.name === 'badges' ||
@@ -102,6 +119,7 @@ export default function ExplorerLayout() {
         <Tabs.Screen name="social" options={{ title: t('tabs.social') }} />
         <Tabs.Screen name="rewards" options={{ title: t('tabs.rewards') }} />
         <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
+        <Tabs.Screen name="notifications" options={{ href: null }} />
         <Tabs.Screen name="edit-profile" options={{ href: null }} />
         <Tabs.Screen name="place/[id]" options={{ href: null }} />
         <Tabs.Screen name="badges" options={{ href: null }} />

@@ -52,7 +52,7 @@ export function CommentRow({ comment, postId, currentUserId, onReply, depth = 0 
   return (
     <View className={depth > 0 ? 'pl-[40px]' : ''}>
       <View className="flex-row gap-[12px] py-[10px]">
-        <Avatar name={comment.userDisplayName} size={32} />
+        <Avatar name={comment.userDisplayName} size={32} ring={false} />
         <View className="flex-1 gap-[2px]">
           <View className="flex-row items-center gap-[8px]">
             <Text variant="labelMedium" className="font-bold text-on-surface">

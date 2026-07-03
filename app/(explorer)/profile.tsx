@@ -16,6 +16,7 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { LogOut, Star, Zap, MapPin, ChevronRight, Pencil } from 'lucide-react-native';
+import { NotificationBell } from '../../src/features/notifications/components/NotificationBell';
 import { Surface } from '../../src/shared/components/Surface';
 import { Text } from '../../src/shared/components/Text';
 import { LabelCaps } from '../../src/shared/components/LabelCaps';
@@ -190,6 +191,7 @@ function TopBar({
             </Text>
           </View>
         )}
+        <NotificationBell size={16} />
         <Pressable
           onPress={onEdit}
           className="p-[8px] rounded-lg bg-surface-container-low"

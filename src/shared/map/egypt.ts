@@ -24,7 +24,7 @@ export const EGYPT_BOUNDS = {
 export const EGYPT_MIN_ZOOM = 5;
 
 /** Simplified Egypt outline, [lng, lat], traced clockwise from the NW coast. */
-const EGYPT_RING: GeoJSON.Position[] = [
+export const EGYPT_RING: GeoJSON.Position[] = [
   [24.7, 31.6], // Sallum — NW Mediterranean coast
   [27.0, 31.4],
   [28.5, 30.9],

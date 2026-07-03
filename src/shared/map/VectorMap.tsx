@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -8,18 +8,18 @@ import {
   Map,
   UserLocation,
   type CameraRef,
-  type GeoJSONSourceRef,
-  type PressEventWithFeatures,
   type StyleSpecification,
 } from '@maplibre/maplibre-react-native';
 import { LocateFixed } from 'lucide-react-native';
-import type { NativeSyntheticEvent } from 'react-native';
 import { Icon } from '../components';
 import { useTheme } from '../theme';
 import { EGYPT_BOUNDS, EGYPT_MIN_ZOOM, egyptBoundary, egyptMask } from './egypt';
+import { buildFogCollection, FOG_BAND_OPACITY } from './fog';
+import { clusterMarkers, CLUSTER_MAX_ZOOM, type MapCluster } from './clustering';
+import { ClusterMarker, RelicMarker } from './MapPins';
 import { resolveMapStyle } from './mapStyle';
 import { useUserLocation } from './useUserLocation';
-import type { MapCameraState, MapProviderCapabilities, MarkerData, Region } from './types';
+import type { Coordinates, MapCameraState, MapProviderCapabilities, MarkerData, Region } from './types';
 
 export const mapProviderCapabilities: MapProviderCapabilities = {
   name: 'maplibre-native',
@@ -38,6 +38,8 @@ interface VectorMapProps {
   selectedId?: string | null;
   /** Show the user-location puck + recenter control. Default true. */
   showUserLocation?: boolean;
+  /** Paint the fog-of-war veil, cleared around visited markers. Default true. */
+  fogEnabled?: boolean;
 }
 
 /**
@@ -53,15 +55,18 @@ export function VectorMap({
   onMarkerPress,
   selectedId,
   showUserLocation = true,
+  fogEnabled = true,
 }: VectorMapProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<CameraRef>(null);
-  const sourceRef = useRef<GeoJSONSourceRef>(null);
   // A marker tap and the map's background tap can both fire for one touch;
   // this timestamp lets the background handler ignore the trailing event so a
   // marker selection isn't immediately cleared.
   const lastFeaturePressRef = useRef(0);
+  // Current zoom drives client-side clustering (custom view-pins don't use the
+  // native cluster source). Seeded from the initial region, then tracked live.
+  const [zoom, setZoom] = useState(region.zoom);
   const { permission, isLocating, locate } = useUserLocation();
 
   useEffect(() => {
@@ -73,45 +78,31 @@ export function VectorMap({
     });
   }, [region.latitude, region.longitude, region.zoom]);
 
-  const featureCollection = useMemo<GeoJSON.FeatureCollection>(
-    () => ({
-      type: 'FeatureCollection',
-      features: markers.map((marker) => ({
-        type: 'Feature',
-        id: marker.id,
-        geometry: { type: 'Point', coordinates: [marker.longitude, marker.latitude] },
-        properties: {
-          id: marker.id,
-          title: marker.title ?? '',
-          categoryName: marker.categoryName ?? '',
-          isVisited: marker.isVisited ?? false,
-        },
-      })),
-    }),
-    [markers],
-  );
+  // The fog veil clears around visited markers; recomputed only when the set of
+  // discovered places changes, not on every pan/zoom.
+  const fogCollection = useMemo<GeoJSON.FeatureCollection>(() => {
+    const reveals: Coordinates[] = markers
+      .filter((marker) => marker.isVisited)
+      .map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude }));
+    return buildFogCollection(reveals);
+  }, [markers]);
 
-  async function handleSourcePress(event: NativeSyntheticEvent<PressEventWithFeatures>) {
-    const feature = event.nativeEvent.features?.[0];
-    if (!feature || feature.geometry.type !== 'Point') return;
+  // Group markers into solo pins / count bubbles for the current zoom.
+  const clusters = useMemo<MapCluster[]>(() => clusterMarkers(markers, zoom), [markers, zoom]);
+
+  function handleClusterPress(cluster: Extract<MapCluster, { kind: 'cluster' }>) {
     lastFeaturePressRef.current = Date.now();
+    cameraRef.current?.setStop({
+      center: [cluster.longitude, cluster.latitude],
+      zoom: Math.min(Math.max(zoom + 2.5, CLUSTER_MAX_ZOOM), 16),
+      easing: 'ease',
+      duration: 450,
+    });
+  }
 
-    const [longitude, latitude] = feature.geometry.coordinates as [number, number];
-    const properties = (feature.properties ?? {}) as Record<string, unknown>;
-
-    if (properties.cluster) {
-      const clusterId = Number(properties.cluster_id);
-      const expansionZoom = await sourceRef.current?.getClusterExpansionZoom(clusterId);
-      cameraRef.current?.setStop({
-        center: [longitude, latitude],
-        zoom: expansionZoom ?? region.zoom + 2,
-        easing: 'ease',
-        duration: 450,
-      });
-      return;
-    }
-
-    onMarkerPress?.(String(properties.id ?? feature.id ?? ''));
+  function handleRelicPress(id: string) {
+    lastFeaturePressRef.current = Date.now();
+    onMarkerPress?.(id);
   }
 
   async function handleRecenter() {
@@ -142,10 +133,11 @@ export function VectorMap({
           }
         }}
         onRegionDidChange={(event) => {
-          const { center, zoom } = event.nativeEvent;
+          const { center, zoom: nextZoom } = event.nativeEvent;
+          setZoom(nextZoom);
           onCameraSettled?.({
             center: { latitude: center[1], longitude: center[0] },
-            zoom,
+            zoom: nextZoom,
           });
         }}
       >
@@ -180,84 +172,36 @@ export function VectorMap({
           />
         </GeoJSONSource>
 
-        {showUserLocation && permission === 'granted' ? <UserLocation animated /> : null}
-
-        {markers.length > 0 ? (
-          <GeoJSONSource
-            ref={sourceRef}
-            id="places"
-            data={featureCollection}
-            cluster
-            clusterRadius={50}
-            clusterMaxZoom={14}
-            onPress={handleSourcePress}
-          >
-            <Layer
-              id="place-cluster-halo"
-              type="circle"
-              filter={['has', 'point_count']}
-              paint={{
-                'circle-color': theme.colors.primary,
-                'circle-opacity': 0.12,
-                'circle-radius': ['step', ['get', 'point_count'], 24, 10, 30, 50, 38],
-              }}
-            />
-            <Layer
-              id="place-clusters"
-              type="circle"
-              filter={['has', 'point_count']}
-              paint={{
-                'circle-color': theme.colors.primaryContainer,
-                'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26],
-                'circle-stroke-width': 1.5,
-                'circle-stroke-color': theme.colors.primary,
-              }}
-            />
-            <Layer
-              id="place-cluster-count"
-              type="symbol"
-              filter={['has', 'point_count']}
-              layout={{
-                'text-field': ['get', 'point_count_abbreviated'],
-                'text-font': ['Noto Sans Regular'],
-                'text-size': 13,
-              }}
-              paint={{ 'text-color': theme.colors.primary }}
-            />
-            <Layer
-              id="place-point-halo"
-              type="circle"
-              filter={['!', ['has', 'point_count']]}
-              paint={{
-                'circle-color': theme.colors.primary,
-                'circle-opacity': 0.14,
-                'circle-radius': 14,
-              }}
-            />
-            <Layer
-              id="place-point"
-              type="circle"
-              filter={['!', ['has', 'point_count']]}
-              paint={{
-                'circle-color': theme.colors.primary,
-                'circle-radius': 6,
-                'circle-stroke-width': 2.5,
-                'circle-stroke-color': theme.colors.onPrimary,
-              }}
-            />
-            <Layer
-              id="place-point-selected"
-              type="circle"
-              filter={['all', ['!', ['has', 'point_count']], ['==', ['get', 'id'], selectedId ?? '']]}
-              paint={{
-                'circle-color': theme.colors.primary,
-                'circle-radius': 10,
-                'circle-stroke-width': 3.5,
-                'circle-stroke-color': theme.colors.onPrimary,
-              }}
-            />
+        {/* Fog of war: a pale "unexplored" veil over Egypt, feathered into soft
+            windows around visited markers via stacked equal-opacity bands. */}
+        {fogEnabled ? (
+          <GeoJSONSource id="fog" data={fogCollection}>
+            {[0, 1, 2].map((band) => (
+              <Layer
+                key={`fog-${band}`}
+                id={`fog-band-${band}`}
+                type="fill"
+                filter={['==', ['get', 'band'], band]}
+                paint={{ 'fill-color': theme.colors.surface, 'fill-opacity': FOG_BAND_OPACITY }}
+              />
+            ))}
           </GeoJSONSource>
         ) : null}
+
+        {showUserLocation && permission === 'granted' ? <UserLocation animated /> : null}
+
+        {clusters.map((cluster) =>
+          cluster.kind === 'cluster' ? (
+            <ClusterMarker key={cluster.id} cluster={cluster} onPress={handleClusterPress} />
+          ) : (
+            <RelicMarker
+              key={cluster.id}
+              marker={cluster.marker}
+              selected={selectedId === cluster.id}
+              onPress={handleRelicPress}
+            />
+          ),
+        )}
       </Map>
 
       {showUserLocation ? (

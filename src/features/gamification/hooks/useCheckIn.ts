@@ -43,8 +43,29 @@ interface CheckInFix {
   isMockLocation: boolean;
 }
 
+/**
+ * DEV ONLY — pin the check-in location to a single place for testing.
+ * When non-null, captureFix returns these coordinates instead of the device GPS,
+ * so a check-in only succeeds at the place whose geofence contains this point
+ * (Cairo Tower, 30.0459/31.2243) and is rejected everywhere else. Set to `null`
+ * to restore the real device-location flow.
+ */
+const DEV_PINNED_LOCATION: { latitude: number; longitude: number } | null = {
+  latitude: 30.0459,
+  longitude: 31.2243,
+};
+
 /** Requests permission and resolves a fresh fix; throws LocationUnavailableError otherwise. */
 async function captureFix(): Promise<CheckInFix> {
+  if (DEV_PINNED_LOCATION) {
+    return {
+      latitude: DEV_PINNED_LOCATION.latitude,
+      longitude: DEV_PINNED_LOCATION.longitude,
+      accuracyMeters: 5,
+      isMockLocation: false,
+    };
+  }
+
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') throw new LocationUnavailableError();
 

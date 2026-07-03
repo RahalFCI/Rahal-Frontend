@@ -17,6 +17,10 @@ export function useSignOut() {
     // Fire-and-forget logout API call
     logout().catch(() => {});
 
+    // NOTE: the backend exposes no DELETE /notifications/fcm-token, so we cannot
+    // de-register this device's push token on logout. The stale token lingers
+    // server-side until the next login on this device overwrites it (backend gap).
+
     clearSession();
     queryClient.clear();
     router.replace('/(auth)/welcome');

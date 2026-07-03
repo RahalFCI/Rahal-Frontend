@@ -7,12 +7,14 @@
  */
 import { publicAxiosInstance } from '../../../shared/api/client';
 import { ApiError, zodParse } from '../../../shared/api';
+import { flags } from '../../../config/flags';
 import { placeEndpoints } from './endpoints';
 import {
   placeSearchEnvelopeSchema,
   type Place,
   type PlaceSearchDocument,
 } from './schemas';
+import { searchMockPlaces } from '../fixtures/places.fixtures';
 
 /** Adapts a flat search document into the nested `Place` shape used everywhere. */
 export function searchDocToPlace(doc: PlaceSearchDocument): Place {
@@ -41,6 +43,7 @@ export async function searchPlaces(
   query: string,
   { page = 1, pageSize = 50 }: SearchPlacesParams = {},
 ): Promise<Place[]> {
+  if (flags.mockData) return searchMockPlaces(query);
   try {
     const response = await publicAxiosInstance.get<unknown>(placeEndpoints.search, {
       params: { query, page, pageSize },

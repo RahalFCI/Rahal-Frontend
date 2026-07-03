@@ -1,12 +1,13 @@
 /**
- * PostCard — a post in the feed / profile, on surface-container-lowest (RelicCard
- * tone). Editorial, not arcade (CLAUDE.md §3.2): the liked state is a quiet amber
- * fill, not a burst. Like is optimistic via useToggleLike.
+ * PostCard — a post in the feed / profile. "Warm editorial magazine" treatment:
+ * a ringed avatar, a name + time subline, generous body type, softly-rounded media,
+ * and pill-shaped action buttons that fill amber when active. Still editorial, not
+ * arcade (CLAUDE.md §3.2): the liked state is a warm amber pill, never a burst.
+ * Like is optimistic via useToggleLike.
  */
 import { View, Pressable } from 'react-native';
 import { Heart, MessageCircle } from 'lucide-react-native';
 import { Text } from '../../../shared/components/Text';
-import { LabelCaps } from '../../../shared/components/LabelCaps';
 import { tokens } from '../../../shared/theme';
 import { Avatar } from './Avatar';
 import { PostMedia } from './PostMedia';
@@ -22,75 +23,79 @@ export interface PostCardProps {
 
 export function PostCard({ post, onPress, onAuthorPress }: PostCardProps) {
   const toggleLike = useToggleLike();
+  const liked = post.isLikedByThisUser;
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      className="bg-surface-container-lowest rounded-lg p-[16px] gap-[12px]"
+      className="bg-surface-container-lowest rounded-xl p-[20px] gap-[14px]"
       style={{
         shadowColor: tokens.colors.onSurface,
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.04,
-        shadowRadius: 20,
+        shadowOpacity: 0.05,
+        shadowRadius: 24,
         elevation: 2,
       }}
     >
-      {/* Author row */}
+      {/* Author row — ringed avatar + name over a quiet time subline */}
       <View className="flex-row items-center gap-[12px]">
         <Pressable onPress={onAuthorPress} accessibilityRole="button">
-          <Avatar name={post.authorName} size={40} />
+          <Avatar name={post.authorName} size={44} ring />
         </Pressable>
-        <View className="flex-1">
-          <Pressable onPress={onAuthorPress}>
-            <Text variant="bodyLarge" className="font-bold text-on-surface">
-              {post.authorName ?? 'Explorer'}
-            </Text>
-          </Pressable>
-        </View>
-        <LabelCaps className="text-on-surface-variant">{relativeTime(post.createdAt)}</LabelCaps>
+        <Pressable onPress={onAuthorPress} className="flex-1">
+          <Text variant="bodyLarge" className="font-bold text-on-surface">
+            {post.authorName ?? 'Explorer'}
+          </Text>
+          <Text variant="labelMedium" className="text-on-surface-variant mt-[1px]">
+            {relativeTime(post.createdAt)}
+          </Text>
+        </Pressable>
       </View>
 
-      {/* Body */}
+      {/* Body — larger, friendlier reading size */}
       {post.content ? (
-        <Text variant="bodyMedium" className="text-on-surface">
+        <Text variant="bodyLarge" className="text-on-surface">
           {post.content}
         </Text>
       ) : null}
 
       <PostMedia urls={post.mediaUrls} />
 
-      {/* Actions */}
-      <View className="flex-row items-center gap-[24px] pt-[4px]">
+      {/* Actions — pill buttons; liked fills amber */}
+      <View className="flex-row items-center gap-[10px] pt-[2px]">
         <Pressable
-          onPress={() => toggleLike.mutate({ postId: post.id, liked: post.isLikedByThisUser })}
+          onPress={() => toggleLike.mutate({ postId: post.id, liked })}
           accessibilityRole="button"
           accessibilityLabel="like"
-          className="flex-row items-center gap-[6px]"
+          className={`flex-row items-center gap-[7px] pl-[12px] pr-[14px] py-[7px] rounded-full ${
+            liked ? 'bg-primary-container/60' : 'bg-surface-container-low'
+          }`}
         >
           <Heart
-            size={20}
-            color={post.isLikedByThisUser ? tokens.colors.primary : tokens.colors.onSurfaceVariant}
-            fill={post.isLikedByThisUser ? tokens.colors.primary : 'transparent'}
-            strokeWidth={1.5}
+            size={18}
+            color={liked ? tokens.colors.primary : tokens.colors.onSurfaceVariant}
+            fill={liked ? tokens.colors.primary : 'transparent'}
+            strokeWidth={2}
           />
-          <LabelCaps
-            className={post.isLikedByThisUser ? 'text-primary' : 'text-on-surface-variant'}
+          <Text
+            variant="labelMedium"
+            className={liked ? 'text-primary font-bold' : 'text-on-surface-variant font-bold'}
           >
             {formatCount(post.likesCount)}
-          </LabelCaps>
+          </Text>
         </Pressable>
 
         <Pressable
           onPress={onPress}
           accessibilityRole="button"
           accessibilityLabel="comments"
-          className="flex-row items-center gap-[6px]"
+          className="flex-row items-center gap-[7px] pl-[12px] pr-[14px] py-[7px] rounded-full bg-surface-container-low"
         >
-          <MessageCircle size={20} color={tokens.colors.onSurfaceVariant} strokeWidth={1.5} />
-          <LabelCaps className="text-on-surface-variant">
+          <MessageCircle size={18} color={tokens.colors.onSurfaceVariant} strokeWidth={2} />
+          <Text variant="labelMedium" className="text-on-surface-variant font-bold">
             {formatCount(post.commentsCount)}
-          </LabelCaps>
+          </Text>
         </Pressable>
       </View>
     </Pressable>

@@ -3,8 +3,9 @@ import { View } from 'react-native';
 import maplibregl from 'maplibre-gl';
 import { useTheme } from '../theme';
 import { EGYPT_BOUNDS, EGYPT_MIN_ZOOM, egyptBoundary, egyptMask } from './egypt';
+import { buildFogCollection, FOG_BAND_OPACITY } from './fog';
 import { resolveMapStyle } from './mapStyle';
-import type { MapCameraState, MapProviderCapabilities, MarkerData, Region } from './types';
+import type { Coordinates, MapCameraState, MapProviderCapabilities, MarkerData, Region } from './types';
 
 export const mapProviderCapabilities: MapProviderCapabilities = {
   name: 'maplibre-web',
@@ -19,7 +20,16 @@ interface VectorMapProps {
   onPress?: (coordinate: { latitude: number; longitude: number }) => void;
   onCameraSettled?: (state: MapCameraState) => void;
   onMarkerPress?: (id: string) => void;
+  selectedId?: string | null;
   showUserLocation?: boolean;
+  fogEnabled?: boolean;
+}
+
+/** Reveal coordinates from the visited subset of markers. */
+function revealsOf(markers: MarkerData[]): Coordinates[] {
+  return markers
+    .filter((marker) => marker.isVisited)
+    .map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude }));
 }
 
 /**
@@ -33,12 +43,15 @@ export function VectorMap({
   onPress,
   onCameraSettled,
   onMarkerPress,
+  selectedId,
   showUserLocation = true,
+  fogEnabled = true,
 }: VectorMapProps) {
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRefs = useRef<maplibregl.Marker[]>([]);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -70,6 +83,22 @@ export function VectorMap({
         source: 'egypt-boundary',
         paint: { 'line-color': theme.colors.primary, 'line-width': 1.5, 'line-opacity': 0.5 },
       });
+
+      // Fog of war: pale veil over Egypt, feathered around visited markers.
+      if (fogEnabled) {
+        map.addSource('fog', { type: 'geojson', data: buildFogCollection(revealsOf(markers)) });
+        [0, 1, 2].forEach((band) => {
+          map.addLayer({
+            id: `fog-band-${band}`,
+            type: 'fill',
+            source: 'fog',
+            filter: ['==', ['get', 'band'], band],
+            paint: { 'fill-color': theme.colors.surface, 'fill-opacity': FOG_BAND_OPACITY },
+          });
+        });
+      }
+
+      loadedRef.current = true;
     });
 
     if (showUserLocation) {
@@ -108,19 +137,36 @@ export function VectorMap({
     });
   }, [region.latitude, region.longitude, region.zoom]);
 
+  // Keep the fog reveals in sync as discovery state changes.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loadedRef.current || !fogEnabled) return;
+    const source = map.getSource('fog') as maplibregl.GeoJSONSource | undefined;
+    source?.setData(buildFogCollection(revealsOf(markers)));
+  }, [markers, fogEnabled]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     markerRefs.current.forEach((marker) => marker.remove());
     markerRefs.current = markers.map((marker) => {
+      const visited = !!marker.isVisited;
+      const selected = marker.id === selectedId;
+      const size = selected ? 22 : visited ? 18 : 14;
       const element = document.createElement('div');
-      element.style.width = '16px';
-      element.style.height = '16px';
-      element.style.borderRadius = '8px';
+      element.style.width = `${size}px`;
+      element.style.height = `${size}px`;
+      element.style.borderRadius = '50%';
       element.style.cursor = 'pointer';
-      element.style.backgroundColor = theme.colors.primary;
-      element.style.border = `2px solid ${theme.colors.onPrimary}`;
+      element.style.boxSizing = 'border-box';
+      // Discovered = amber beacon; undiscovered = pale dashed ghost.
+      element.style.backgroundColor = visited ? theme.colors.primary : theme.colors.surfaceContainerLowest;
+      element.style.border = visited
+        ? `2.5px solid ${theme.colors.surfaceContainerLowest}`
+        : `2px dashed ${theme.colors.outlineVariant}`;
+      element.style.opacity = visited || selected ? '1' : '0.9';
+      if (visited || selected) element.style.boxShadow = '0 2px 8px rgba(44,47,48,0.25)';
       element.addEventListener('click', (event) => {
         event.stopPropagation();
         onMarkerPress?.(marker.id);
@@ -130,7 +176,14 @@ export function VectorMap({
         .setLngLat([marker.longitude, marker.latitude])
         .addTo(map);
     });
-  }, [markers, theme.colors.primary, theme.colors.onPrimary, onMarkerPress]);
+  }, [
+    markers,
+    selectedId,
+    theme.colors.primary,
+    theme.colors.surfaceContainerLowest,
+    theme.colors.outlineVariant,
+    onMarkerPress,
+  ]);
 
   return <View ref={containerRef as never} style={{ flex: 1 }} />;
 }

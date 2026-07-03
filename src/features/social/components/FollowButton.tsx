@@ -21,7 +21,7 @@ export function FollowButton({ following, pending, onPress }: FollowButtonProps)
       onPress={onPress}
       disabled={pending}
       accessibilityRole="button"
-      className={`px-[20px] py-[8px] rounded-xl items-center justify-center ${
+      className={`px-[22px] py-[9px] rounded-full items-center justify-center ${
         following ? 'bg-surface-container-low' : 'bg-primary'
       }`}
     >

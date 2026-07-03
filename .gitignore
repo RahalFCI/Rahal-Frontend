@@ -18,3 +18,14 @@ web-build/
 
 # Expo
 expo-env.d.ts
+
+# Firebase (FCM push) — per-project client config, dropped in locally before a
+# dev-client rebuild. Required by app.json android.googleServicesFile.
+google-services.json
+GoogleService-Info.plist
+
+# Stray backend env holding secrets (Cloudinary/Firebase) — never commit
+/env
+.maestro 
+outputs/
+.claude

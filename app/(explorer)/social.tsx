@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { PenLine, Users } from 'lucide-react-native';
+import { NotificationBell } from '../../src/features/notifications/components/NotificationBell';
 import { Surface } from '../../src/shared/components/Surface';
 import { Text } from '../../src/shared/components/Text';
 import { LabelCaps } from '../../src/shared/components/LabelCaps';
@@ -33,13 +34,19 @@ export default function SocialScreen() {
         {/* Header */}
         <View className="flex-row items-end justify-between pt-[16px] pr-[16px]">
           <OffsetHeadline title={t('feed.title')} />
-          <Pressable
-            onPress={() => router.push('/(explorer)/social/discover')}
-            className="flex-row items-center gap-[6px] p-[8px] rounded-lg bg-surface-container-low"
-            accessibilityLabel={t('feed.discover')}
-          >
-            <Users size={18} color={tokens.colors.onSurfaceVariant} strokeWidth={2} />
-          </Pressable>
+          <View className="flex-row items-center gap-[8px]">
+            <Pressable
+              onPress={() => router.push('/(explorer)/social/discover')}
+              className="flex-row items-center gap-[8px] pl-[12px] pr-[14px] py-[9px] rounded-full bg-primary-container/50"
+              accessibilityLabel={t('feed.discover')}
+            >
+              <Users size={18} color={tokens.colors.primary} strokeWidth={2} />
+              <Text variant="labelMedium" className="text-primary font-bold">
+                {t('feed.discover')}
+              </Text>
+            </Pressable>
+            <NotificationBell accessibilityLabel={t('notifications:title', { defaultValue: 'Notifications' })} />
+          </View>
         </View>
 
         {feed.isLoading ? (

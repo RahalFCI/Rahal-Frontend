@@ -14,6 +14,7 @@ import { useAuthStore } from '../src/features/auth/store/authStore';
 import { setAuthStoreRef, setRefreshFn } from '../src/shared/api/refreshInterceptor';
 import { refreshTokens } from '../src/features/auth/api/authApi';
 import { ToastProvider } from '../src/shared/components/Toast';
+import { NotificationsBridge } from '../src/features/notifications/components/NotificationsBridge';
 import '../src/shared/i18n';
 import '../global.css';
 
@@ -60,6 +61,7 @@ export default function RootLayout() {
         <ToastProvider>
           <StatusBar style="dark" />
           <Slot />
+          <NotificationsBridge />
         </ToastProvider>
       </SafeAreaProvider>
     </PersistQueryClientProvider>

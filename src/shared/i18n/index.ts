@@ -13,13 +13,24 @@ import gamification from './en/gamification.json';
 import rewards from './en/rewards.json';
 import social from './en/social.json';
 import payment from './en/payment.json';
+import notifications from './en/notifications.json';
 
 const i18n = createInstance();
 
 i18n.use(initReactI18next).init({
   lng: 'en',
   fallbackLng: 'en',
-  ns: ['common', 'auth', 'places', 'vendors', 'gamification', 'rewards', 'social', 'payment'],
+  ns: [
+    'common',
+    'auth',
+    'places',
+    'vendors',
+    'gamification',
+    'rewards',
+    'social',
+    'payment',
+    'notifications',
+  ],
   defaultNS: 'common',
   resources: {
     en: {
@@ -31,6 +42,7 @@ i18n.use(initReactI18next).init({
       rewards,
       social,
       payment,
+      notifications,
     },
   },
   interpolation: {

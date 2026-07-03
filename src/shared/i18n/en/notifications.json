@@ -1,0 +1,10 @@
+{
+  "title": "Dispatches",
+  "back": "Back",
+  "markAll": "Mark all read",
+  "empty": "No dispatches yet",
+  "emptyHint": "Likes, comments, and follows from your fellow explorers will be catalogued here.",
+  "error": {
+    "markAllFailed": "Couldn't mark all as read. Try again."
+  }
+}

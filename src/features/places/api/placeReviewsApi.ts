@@ -5,10 +5,13 @@
  */
 import { publicApiClient } from '../../../shared/api/client';
 import { zodParse } from '../../../shared/api';
+import { flags } from '../../../config/flags';
 import { placeEndpoints } from './endpoints';
 import { placeReviewsSchema, type PlaceReview } from './schemas';
+import { getMockReviews } from '../fixtures/places.fixtures';
 
 export async function getPlaceReviews(placeId: string): Promise<PlaceReview[]> {
+  if (flags.mockData) return zodParse(placeReviewsSchema, getMockReviews(placeId));
   const data = await publicApiClient<unknown>({
     method: 'GET',
     url: placeEndpoints.reviews(placeId),
