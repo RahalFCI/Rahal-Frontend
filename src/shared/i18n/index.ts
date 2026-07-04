@@ -14,6 +14,7 @@ import rewards from './en/rewards.json';
 import social from './en/social.json';
 import payment from './en/payment.json';
 import notifications from './en/notifications.json';
+import travel from './en/travel.json';
 
 const i18n = createInstance();
 
@@ -30,6 +31,7 @@ i18n.use(initReactI18next).init({
     'social',
     'payment',
     'notifications',
+    'travel',
   ],
   defaultNS: 'common',
   resources: {
@@ -43,6 +45,7 @@ i18n.use(initReactI18next).init({
       social,
       payment,
       notifications,
+      travel,
     },
   },
   interpolation: {

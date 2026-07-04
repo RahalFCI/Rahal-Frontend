@@ -29,6 +29,20 @@ export const achievementEndpoints = {
   byId: (id: string) => `/Achievement/${id}`,
 } as const;
 
+export const challengeEndpoints = {
+  /** GET active challenge templates tied to a place. */
+  forPlace: (placeId: string) => `/Challenge/place/${placeId}`,
+} as const;
+
+export const checkInChallengeEndpoints = {
+  /** POST { challengeId, checkInId } → links a check-in to a challenge (Pending). */
+  create: '/CheckInChallenge',
+  /** POST multipart (field `image`) → validates the attempt, returns bool verdict. */
+  validate: (id: string) => `/CheckInChallenge/${id}/validate`,
+  /** GET an explorer's attempts tied to a single check-in (paginated). */
+  forCheckIn: (checkInId: string) => `/CheckInChallenge/checkin/${checkInId}`,
+} as const;
+
 export const explorerAchievementEndpoints = {
   /** GET the achievements an explorer has earned (paginated). */
   forExplorer: (explorerId: string) => `/ExplorerAchievement/explorer/${explorerId}`,

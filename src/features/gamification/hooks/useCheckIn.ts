@@ -47,12 +47,12 @@ interface CheckInFix {
  * DEV ONLY — pin the check-in location to a single place for testing.
  * When non-null, captureFix returns these coordinates instead of the device GPS,
  * so a check-in only succeeds at the place whose geofence contains this point
- * (Cairo Tower, 30.0459/31.2243) and is rejected everywhere else. Set to `null`
- * to restore the real device-location flow.
+ * (Baron Empain Palace, 30.0904/31.3211) and is rejected everywhere else. Set to
+ * `null` to restore the real device-location flow.
  */
 const DEV_PINNED_LOCATION: { latitude: number; longitude: number } | null = {
-  latitude: 30.0459,
-  longitude: 31.2243,
+  latitude: 30.0904,
+  longitude: 31.3211,
 };
 
 /** Requests permission and resolves a fresh fix; throws LocationUnavailableError otherwise. */

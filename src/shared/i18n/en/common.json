@@ -7,6 +7,8 @@
     "journal": "Journal",
     "social": "Social",
     "rewards": "Rewards",
+    "coupons": "Coupons",
+    "premium": "Premium",
     "profile": "Profile"
   },
   "placeholder": {
@@ -107,6 +109,7 @@
     "notFound": "The requested resource was not found.",
     "forbidden": "You don't have permission to do that.",
     "profileSetupRequired": "Complete your Explorer profile before continuing.",
+    "businessRule": "This action isn't available right now.",
     "unknown": "An unexpected error occurred."
   }
 }

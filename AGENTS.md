@@ -336,6 +336,12 @@ Each ErrorCode from the backend maps to exactly one tier in `shared/api/errors.t
 - `.env` via `expo-constants` with separate `dev`, `staging`, `prod` configs.
 - Feature flags in `config/flags.ts` to gate stretch features during demos.
 
+### 6.6 Windows Operations Notes
+
+- Docker commands for Rahal on Windows need escalated execution immediately.
+- For Postgres SQL with mixed-case identifiers, do not use inline PowerShell `psql -c` quoting. Write or copy a `.sql` file into the container and run `psql -f`, or use catalog queries.
+- For `scripts/emu.sh`, do not call plain `bash` because it hits WSL. Run `C:\Program Files\Git\usr\bin\bash.exe -lc 'cd /e/projects/Rahal-Frontend && ./scripts/emu.sh up|status'`.
+
 ---
 
 ## 7. Milestones & Checkpoints
@@ -386,6 +392,8 @@ Append-only. Every architectural decision goes here with rationale.
 | 2026-04-13 | MVP = Phases 0–3 + one reward flow                               | Matches 10-minute defense demo budget                                       |
 | 2026-04-13 | Automated tests deferred                                         | Revisited post-MVP; not a committee requirement                             |
 | 2026-04-13 | Biometric unlock deferred                                        | Post-MVP consideration                                                      |
+| 2026-07-03 | Place challenges are displayed from `GET /Challenge/place/{placeId}`; challenge attempts remain locked until `GetCheckInDto` exposes `Id` | `CreateCheckInChallengeDto` requires `CheckInId`, but the current check-in DTO only returns explorer/place/status. The Explorer UI can truthfully show place challenges now without faking the attempt flow. |
+| 2026-07-03 | Current backend vendor map presence is `VendorBranch` → special `Vendor` `PlaceCategory`, not `Place.VendorId` | The running backend has `VendorBranchController` and creates branch places with category `c666.../Vendor`; `Place` still has no `VendorId`. Vendor category filtering by restaurant/cafe needs a backend list/search endpoint that joins branches to vendor profile categories. |
 
 ---
 

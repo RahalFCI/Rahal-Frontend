@@ -42,7 +42,7 @@ export default function JournalScreen() {
             data={entries}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <JournalEntry entry={item} />}
-            contentContainerClassName="px-[24px] pt-[24px] pb-[32px] gap-[16px]"
+            contentContainerClassName="px-[24px] pt-[24px] pb-[120px] gap-[16px]"
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl

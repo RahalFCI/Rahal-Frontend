@@ -13,6 +13,8 @@ import { usePlace } from '../../../src/features/places/hooks/usePlace';
 import { PlaceDetail } from '../../../src/features/places/components/detail/PlaceDetail';
 import { VendorDetail } from '../../../src/features/places/components/detail/VendorDetail';
 import { useVendor } from '../../../src/features/vendors/hooks/useVendor';
+import { DetailSection } from '../../../src/features/places/components/detail/DetailSection';
+import { PlaceChallenges } from '../../../src/features/gamification/components/PlaceChallenges';
 
 export default function PlaceDetailScreen() {
   const theme = useTheme();
@@ -47,5 +49,11 @@ export default function PlaceDetailScreen() {
     return <VendorDetail place={place} vendor={vendorQuery.data} onClose={close} />;
   }
 
-  return <PlaceDetail place={place} onClose={close} />;
+  return (
+    <PlaceDetail place={place} onClose={close}>
+      <DetailSection eyebrow={t('challenges.eyebrow')}>
+        <PlaceChallenges placeId={place.id} />
+      </DetailSection>
+    </PlaceDetail>
+  );
 }

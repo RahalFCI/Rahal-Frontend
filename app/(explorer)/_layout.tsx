@@ -4,7 +4,7 @@
  */
 import { Redirect, Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Compass, BookOpen, Newspaper, Gift, User } from 'lucide-react-native';
+import { Compass, BookOpen, Newspaper, Ticket, Gem, User } from 'lucide-react-native';
 import { ArchivistBar } from '../../src/shared/layout/ArchivistBar';
 import { useTheme } from '../../src/shared/theme';
 import { Pressable } from 'react-native';
@@ -36,7 +36,8 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     index: Compass,
     journal: BookOpen,
     social: Newspaper,
-    rewards: Gift,
+    rewards: Ticket,
+    premium: Gem,
     profile: User,
   };
 
@@ -52,6 +53,8 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           route.name === 'badge/[id]' ||
           route.name === 'coupon/[id]' ||
           route.name === 'my-coupons' ||
+          route.name === 'travel-plan' ||
+          route.name === 'vendor/[id]' ||
           route.name === 'social/[id]' ||
           route.name === 'social/compose' ||
           route.name === 'social/discover' ||
@@ -78,14 +81,17 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 navigation.navigate(route.name);
               }
             }}
-            className="items-center py-[4px] px-[12px]"
+            // flex-1 so all six tabs share the bar width evenly and never overflow
+            // past the right edge (a bottom nav shouldn't scroll horizontally).
+            className="flex-1 items-center py-[4px] px-[2px]"
           >
             <IconComponent
-              size={24}
+              size={22}
               color={isFocused ? theme.colors.primary : theme.colors.onSurfaceVariant}
               strokeWidth={isFocused ? 2 : 1.5}
             />
             <Text
+              numberOfLines={1}
               variant="labelSmall"
               className={isFocused ? 'text-primary mt-[2px]' : 'text-on-surface-variant mt-[2px]'}
             >
@@ -110,6 +116,9 @@ export default function ExplorerLayout() {
     <RewardOverlayProvider>
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
+        // `history` so pressing back from a detail/hidden tab (coupon, my-coupons,
+        // vendor…) returns to the tab you came from, not the first tab (the map).
+        backBehavior="history"
         screenOptions={{
           headerShown: false,
         }}
@@ -117,7 +126,8 @@ export default function ExplorerLayout() {
         <Tabs.Screen name="index" options={{ title: t('tabs.discover') }} />
         <Tabs.Screen name="journal" options={{ title: t('tabs.journal') }} />
         <Tabs.Screen name="social" options={{ title: t('tabs.social') }} />
-        <Tabs.Screen name="rewards" options={{ title: t('tabs.rewards') }} />
+        <Tabs.Screen name="rewards" options={{ title: t('tabs.coupons') }} />
+        <Tabs.Screen name="premium" options={{ title: t('tabs.premium') }} />
         <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
         <Tabs.Screen name="notifications" options={{ href: null }} />
         <Tabs.Screen name="edit-profile" options={{ href: null }} />
@@ -126,6 +136,8 @@ export default function ExplorerLayout() {
         <Tabs.Screen name="badge/[id]" options={{ href: null }} />
         <Tabs.Screen name="coupon/[id]" options={{ href: null }} />
         <Tabs.Screen name="my-coupons" options={{ href: null }} />
+        <Tabs.Screen name="travel-plan" options={{ href: null }} />
+        <Tabs.Screen name="vendor/[id]" options={{ href: null }} />
         <Tabs.Screen name="social/[id]" options={{ href: null }} />
         <Tabs.Screen name="social/compose" options={{ href: null }} />
         <Tabs.Screen name="social/discover" options={{ href: null }} />

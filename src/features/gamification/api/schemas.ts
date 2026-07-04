@@ -26,6 +26,8 @@ export interface CheckInRequest {
  * `validationStatus` arrives as a string like "Verified", not a number. Accept both.
  */
 export const checkInSchema = z.object({
+  /** GetCheckInDto.CheckInId — the check-in's own id (needed to link a challenge attempt). */
+  checkInId: z.string().nullish(),
   explorerId: z.string().nullish(),
   placeId: z.string().nullish(),
   validationStatus: z.union([z.number(), z.string()]).nullish(),
@@ -92,6 +94,40 @@ export const achievementSchema = z.object({
 });
 export const pagedAchievementsSchema = pagedSchema(achievementSchema);
 
+/** GetChallengeDto — a challenge template attached to a place. */
+export const challengeSchema = z.object({
+  id: z.string(),
+  placeId: z.string(),
+  name: z.string(),
+  description: z.string().nullish(),
+  validationPrompt: z.string().nullish(),
+  type: z.string().nullish(),
+  difficulty: z.string().nullish(),
+  minimumLevelRequired: z.number().nullish(),
+  xpReward: z.number().nullish(),
+  isActive: z.boolean().nullish(),
+  createdAt: z.string().nullish(),
+  updatedAt: z.string().nullish(),
+});
+export const pagedChallengesSchema = pagedSchema(challengeSchema);
+
+/**
+ * GetCheckInChallengeDto — one explorer's attempt at a challenge, linked to a
+ * check-in. `validationStatus` is the stringified ChallengeValidationStatus
+ * ("Pending" | "Approved" | "Rejected"). `proofMediaUrl` is currently always empty
+ * (the backend does not persist the uploaded photo), kept for forward-compat.
+ */
+export const checkInChallengeSchema = z.object({
+  id: z.string(),
+  challengeId: z.string(),
+  challengeName: z.string().nullish(),
+  checkInId: z.string(),
+  explorerId: z.string().nullish(),
+  proofMediaUrl: z.string().nullish(),
+  validationStatus: z.string().nullish(),
+});
+export const pagedCheckInChallengesSchema = pagedSchema(checkInChallengeSchema);
+
 /**
  * GetExplorerAchievementDto — an achievement the explorer has earned.
  * Backend fields: id, achievementId, achievementTitle, explorerId, earnedAt,
@@ -113,4 +149,6 @@ export const pagedCheckInsSchema = pagedSchema(checkInSchema);
 export type XpTransaction = z.infer<typeof xpTransactionSchema>;
 export type Badge = z.infer<typeof badgeSchema>;
 export type Achievement = z.infer<typeof achievementSchema>;
+export type Challenge = z.infer<typeof challengeSchema>;
+export type CheckInChallenge = z.infer<typeof checkInChallengeSchema>;
 export type ExplorerAchievement = z.infer<typeof explorerAchievementSchema>;

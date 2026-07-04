@@ -3,7 +3,20 @@
     "rewards": {
       "title": "Rewards",
       "balance": "{{value}} XP available"
+    },
+    "coupons": {
+      "title": "Coupons"
+    },
+    "premium": {
+      "title": "Premium",
+      "subtitle": "Unlock more of the journey — faster XP and travel planning."
     }
+  },
+  "catalog": {
+    "rahalVendor": "Rahal Selects",
+    "vendorFallback": "Vendor",
+    "couponCount_one": "{{count}} coupon",
+    "couponCount_other": "{{count}} coupons"
   },
   "common": {
     "back": "Back"
@@ -16,6 +29,10 @@
     "costLabel": "Cost",
     "minimumLabel": "Minimum spend",
     "minimumValue": "EGP {{value}}",
+    "minimumRule": "Min. spend EGP {{value}}",
+    "remainingLabel": "Remaining",
+    "remaining_one": "{{count}} left",
+    "remaining_other": "{{count}} left",
     "expiryLabel": "Expiry",
     "balanceLabel": "Your balance",
     "discountPercentage": "{{value}}% off",
@@ -35,17 +52,36 @@
   "claim": {
     "cta": "Claim for XP",
     "claiming": "Claiming…",
+    "viewInWallet": "View in My Coupons",
+    "alreadyClaimedCta": "Already Claimed",
     "success": "Claimed “{{title}}.” Find the code in My Coupons.",
     "successGeneric": "Coupon claimed. Find the code in My Coupons.",
     "alreadyClaimed": "You've already claimed this coupon.",
     "error": "We couldn't claim this coupon. Please try again."
   },
+  "redeem": {
+    "eyebrow": "Entered into the journal",
+    "title": "Coupon claimed",
+    "walletEyebrow": "Ready to redeem",
+    "walletTitle": "Show at the store",
+    "showAtVendor": "Show this code at {{vendor}} to redeem",
+    "showAtStore": "Show this code at the store to redeem",
+    "dismiss": "Dismiss",
+    "dismissHint": "Tap anywhere to continue"
+  },
   "wallet": {
     "title": "My Coupons",
     "link": "My Coupons",
     "empty": "You haven't claimed any coupons yet.",
+    "emptyFilter": "No coupons in this state.",
     "untitled": "Coupon",
     "codeLabel": "Code",
+    "filter": {
+      "all": "All",
+      "ready": "Ready",
+      "redeemed": "Redeemed",
+      "expired": "Expired"
+    },
     "status": {
       "pending": "Pending",
       "claimed": "Claimed",

@@ -37,6 +37,10 @@ export default function DiscoverScreen() {
   const { data: checkInHistory } = useCheckInHistory(explorerId);
   const visitedIds = useMemo(() => {
     const ids = (checkInHistory?.items ?? [])
+      .filter((item) => {
+        const status = String(item.validationStatusName ?? item.validationStatus ?? '').toLowerCase();
+        return status === 'verified' || status === '1';
+      })
       .map((item) => item.placeId)
       .filter((id): id is string => !!id);
     if (ids.length === 0 && flags.mockData) return new Set(MOCK_VISITED_PLACE_IDS);

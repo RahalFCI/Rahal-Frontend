@@ -1,7 +1,8 @@
 /**
- * CouponCard — a cataloged coupon in the rewards list (CLAUDE.md §3.2: rewards are
- * cataloged, not celebrated). Composes RelicCard + Text + LabelCaps. Unclaimable
- * coupons (sold out / expired) desaturate, mirroring the locked BadgeCard treatment.
+ * CouponCard — a cataloged coupon in the vendor catalog (CLAUDE.md §3.2: rewards are
+ * cataloged, not celebrated). The discount reads as the hero, with the rule line and
+ * an XP-cost pill beneath and remaining-claims / expiry as label-caps metadata.
+ * Unclaimable coupons (sold out / expired) desaturate, mirroring the locked BadgeCard.
  */
 import { View, Pressable } from 'react-native';
 import { Ticket } from 'lucide-react-native';
@@ -23,10 +24,11 @@ export function CouponCard({ coupon, onPress }: CouponCardProps) {
   // XP balance isn't needed here — only availability gates the card's dimmed state.
   const { reason } = claimability(coupon, Number.POSITIVE_INFINITY);
   const unavailable = reason === 'SOLD_OUT' || reason === 'EXPIRED' || reason === 'INACTIVE';
+  const remaining = coupon.remainingClaims;
 
   const body = (
     <View
-      className={`p-[16px] rounded-lg gap-[12px] ${
+      className={`p-[16px] rounded-lg gap-[14px] ${
         unavailable ? 'bg-surface-container-low opacity-60' : 'bg-surface-container-lowest'
       }`}
       style={
@@ -41,6 +43,7 @@ export function CouponCard({ coupon, onPress }: CouponCardProps) {
           : undefined
       }
     >
+      {/* Hero: discount + title */}
       <View className="flex-row items-start gap-[12px]">
         <View
           className={`w-[44px] h-[44px] rounded-xl items-center justify-center ${
@@ -54,18 +57,46 @@ export function CouponCard({ coupon, onPress }: CouponCardProps) {
           />
         </View>
         <View className="flex-1 gap-[2px]">
+          <Text
+            variant="headlineSmall"
+            className={unavailable ? 'text-on-surface-variant' : 'text-primary'}
+          >
+            {formatDiscount(coupon)}
+          </Text>
           <Text variant="bodyLarge" className="font-bold text-on-surface">
             {coupon.title}
           </Text>
-          <LabelCaps className="text-on-surface-variant">{formatDiscount(coupon)}</LabelCaps>
         </View>
       </View>
 
-      <View className="flex-row items-center justify-between">
-        <LabelCaps className={unavailable ? 'text-on-surface-variant' : 'text-primary'}>
-          {unavailable ? t(`eligibility.${reason}`) : t('coupon.xpCost', { value: coupon.xpCost })}
+      {/* Rule line: minimum spend, when present */}
+      {coupon.minimumCharge != null && coupon.minimumCharge > 0 ? (
+        <LabelCaps className="text-on-surface-variant">
+          {t('coupon.minimumRule', { value: coupon.minimumCharge })}
         </LabelCaps>
-        <LabelCaps className="text-on-surface-variant">{formatExpiry(coupon.expiresAt)}</LabelCaps>
+      ) : null}
+
+      {/* Footer: XP cost pill + remaining/expiry metadata */}
+      <View className="flex-row items-center justify-between">
+        <View
+          className={`px-[10px] py-[4px] rounded-xl ${
+            unavailable ? 'bg-surface-container' : 'bg-primary-container/30'
+          }`}
+        >
+          <LabelCaps className={unavailable ? 'text-on-surface-variant' : 'text-primary'}>
+            {unavailable
+              ? t(`eligibility.${reason}`)
+              : t('coupon.xpCost', { value: coupon.xpCost })}
+          </LabelCaps>
+        </View>
+        <View className="items-end gap-[2px]">
+          {!unavailable && remaining != null ? (
+            <LabelCaps className="text-on-surface-variant">
+              {t('coupon.remaining', { count: remaining })}
+            </LabelCaps>
+          ) : null}
+          <LabelCaps className="text-on-surface-variant">{formatExpiry(coupon.expiresAt)}</LabelCaps>
+        </View>
       </View>
     </View>
   );

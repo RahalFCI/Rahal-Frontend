@@ -4,6 +4,12 @@
   "visualArtifacts": "Visual Artifacts",
   "today": "Today",
   "openNow": "Open Now",
+  "notFound": "This vendor is no longer available.",
+  "location": "Location",
+  "locationUnknown": "Location not listed",
+  "hoursUnavailable": "Hours not listed",
+  "couponsHere_one": "{{count}} coupon here",
+  "couponsHere_other": "{{count}} coupons here",
   "navigateToLocation": "Navigate to Location",
   "actions": {
     "map": "Map",

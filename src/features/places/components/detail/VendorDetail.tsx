@@ -53,9 +53,10 @@ export function VendorDetail({ place, vendor, onClose }: VendorDetailProps) {
   const photoUrls = photos?.map((p) => p.url) ?? [];
   const heroUrl = photoUrls[0] ?? vendor.profilePictureUrl ?? undefined;
 
-  const address = vendor.address ?? place.address;
-  const addressLine = address?.addressLine?.trim();
-  const addressSub = [address?.city, address?.government, address?.country]
+  // Vendor address is a free-text line; the structured parts live on the Place.
+  const placeAddress = place.address;
+  const addressLine = vendor.address?.trim() || placeAddress?.addressLine?.trim();
+  const addressSub = [placeAddress?.city, placeAddress?.government, placeAddress?.country]
     .map((p) => p?.trim())
     .filter((p): p is string => !!p)
     .join(', ');

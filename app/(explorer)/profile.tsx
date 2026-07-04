@@ -289,7 +289,7 @@ export default function ProfileScreen() {
           editLabel={t('profile.editProfile')}
         />
 
-        <ScrollView contentContainerClassName="pb-[32px]" showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerClassName="pb-[120px]" showsVerticalScrollIndicator={false}>
           {isLoading && (
             <View className="items-center py-[48px]">
               <ActivityIndicator color={tokens.colors.primary} size="large" />

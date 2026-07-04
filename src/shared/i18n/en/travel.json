@@ -1,0 +1,56 @@
+{
+  "back": "Back",
+  "screen": {
+    "title": "Travel Planner",
+    "subtitle": "Describe the journey you want and we'll draft an itinerary grounded in Egypt's places.",
+    "generating": "Charting your itinerary. This can take a moment while we consult the archive."
+  },
+  "entry": {
+    "eyebrow": "Premium Perk",
+    "title": "Plan a journey with the Travel Planner",
+    "body": "Turn a few notes into a grounded, day-by-day itinerary across Egypt.",
+    "cta": "Open the planner"
+  },
+  "upsell": {
+    "eyebrow": "Premium Only",
+    "title": "Travel planning is a premium perk",
+    "body": "Subscribe to a premium tier to generate grounded itineraries with your weekly plan allowance.",
+    "cta": "See premium tiers"
+  },
+  "quota": {
+    "used": "{{used}} of {{max}} plans used this period",
+    "usedNoMax": "{{used}} plans generated",
+    "reached": "Plan limit reached"
+  },
+  "form": {
+    "promptLabel": "What kind of trip?",
+    "promptPlaceholder": "e.g. A relaxed 3-day Cairo trip focused on ancient history and local food.",
+    "promptError": "Tell us a little about the trip (up to 2000 characters).",
+    "durationLabel": "Stay duration (days)",
+    "durationPlaceholder": "3",
+    "durationError": "Enter a whole number of days greater than zero.",
+    "budgetLabel": "Budget limit",
+    "budgetPlaceholder": "5000",
+    "budgetError": "Enter a budget of zero or more.",
+    "generate": "Generate itinerary",
+    "generating": "Generating…"
+  },
+  "result": {
+    "eyebrow": "Your Itinerary"
+  },
+  "history": {
+    "title": "Saved Plans",
+    "empty": "No travel plans yet. Generate your first above.",
+    "durationMeta_one": "{{count}} day",
+    "durationMeta_other": "{{count}} days",
+    "tapToExpand": "Tap to read the itinerary",
+    "expand": "Expand plan",
+    "collapse": "Collapse plan"
+  },
+  "error": {
+    "limitReached": "You've reached your travel-plan limit for this period.",
+    "subscriptionRequired": "An active premium subscription is required to generate a plan.",
+    "generationFailed": "The planner is temporarily unavailable. Please try again shortly.",
+    "generic": "We couldn't generate that plan. Please try again."
+  }
+}

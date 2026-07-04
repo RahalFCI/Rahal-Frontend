@@ -5,6 +5,7 @@
  * the place coordinates and SAVE is a local bookmark stub.
  */
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -26,9 +27,10 @@ import { RatingPill } from './RatingPill';
 interface PlaceDetailProps {
   place: Place;
   onClose: () => void;
+  children?: ReactNode;
 }
 
-export function PlaceDetail({ place, onClose }: PlaceDetailProps) {
+export function PlaceDetail({ place, onClose, children }: PlaceDetailProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation('places');
@@ -98,6 +100,8 @@ export function PlaceDetail({ place, onClose }: PlaceDetailProps) {
         <DetailSection eyebrow={t('detail.narrative')} body={place.description} />
 
         <PhotoGallery eyebrow={t('detail.visualArchive')} photos={photoUrls} />
+
+        {children}
 
         <Surface tone="low" style={styles.infoCard}>
           <DetailInfoRow

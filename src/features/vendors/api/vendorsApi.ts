@@ -1,7 +1,8 @@
 /**
- * Vendors API. `GET /VendorProfile/{id}` is Vendor/Admin-gated, so this uses the
- * authenticated apiClient. Dormant until the backend ships `Place.VendorId`
- * (docs/backend-vendor-place-proposal.md) — see the place detail screen.
+ * Vendors API. `GET /VendorProfile/{id}` is `[Authorize]` (any authenticated role,
+ * including Explorer), so this uses the authenticated apiClient. Used by the coupon
+ * catalog to resolve each coupon's `vendorId` into a display name/logo/address
+ * (`useCouponsByVendor`), and by the place detail screen for vendor-operated places.
  */
 import { apiClient } from '../../../shared/api/client';
 import { zodParse } from '../../../shared/api';

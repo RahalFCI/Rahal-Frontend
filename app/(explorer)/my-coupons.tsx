@@ -1,7 +1,10 @@
 /**
  * My Coupons route — the explorer's wallet of claimed coupons with their redeemable
- * codes. Reached from the rewards header. Hidden from the tab bar via `href: null`.
+ * codes/QRs, filterable by status (All · Ready · Redeemed · Expired). "Ready" is the
+ * user's "pending" — claimed with XP but not yet used at a store. Reached from the
+ * coupons header. Hidden from the tab bar via `href: null`.
  */
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -13,11 +16,29 @@ import { LabelCaps } from '../../src/shared/components/LabelCaps';
 import { tokens } from '../../src/shared/theme';
 import { useMyCoupons } from '../../src/features/rewards/hooks/useMyCoupons';
 import { UserCouponCard } from '../../src/features/rewards/components/UserCouponCard';
+import {
+  StatusFilterBar,
+  statusBucket,
+  type WalletFilter,
+} from '../../src/features/rewards/components/StatusFilterBar';
+import { CouponRedeemedMoment } from '../../src/features/rewards/components/CouponRedeemedMoment';
+import type { UserCoupon } from '../../src/features/rewards/api/schemas';
 
 export default function MyCouponsScreen() {
   const router = useRouter();
   const { t } = useTranslation('rewards');
   const { userCoupons, isLoading } = useMyCoupons();
+
+  const [filter, setFilter] = useState<WalletFilter>('all');
+  const [enlarged, setEnlarged] = useState<UserCoupon | null>(null);
+
+  const visible = useMemo(
+    () =>
+      filter === 'all'
+        ? userCoupons
+        : userCoupons.filter((c) => statusBucket(c.status) === filter),
+    [userCoupons, filter],
+  );
 
   return (
     <Surface tone="base" className="flex-1">
@@ -34,28 +55,43 @@ export default function MyCouponsScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerClassName="px-[24px] pb-[40px] gap-[20px]">
+        <View className="px-[24px] gap-[16px]">
           <Text variant="headlineLarge" className="text-on-surface">
             {t('wallet.title')}
           </Text>
+          <StatusFilterBar selected={filter} onSelect={setFilter} />
+        </View>
 
+        <ScrollView contentContainerClassName="px-[24px] pt-[16px] pb-[40px] gap-[16px]">
           {isLoading ? (
             <View className="items-center py-[48px]">
               <ActivityIndicator color={tokens.colors.primary} size="large" />
             </View>
-          ) : userCoupons.length === 0 ? (
+          ) : visible.length === 0 ? (
             <Surface tone="lowest" className="p-[24px] rounded-lg">
-              <LabelCaps className="text-on-surface-variant">{t('wallet.empty')}</LabelCaps>
+              <LabelCaps className="text-on-surface-variant">
+                {filter === 'all' ? t('wallet.empty') : t('wallet.emptyFilter')}
+              </LabelCaps>
             </Surface>
           ) : (
-            <View className="gap-[16px]">
-              {userCoupons.map((userCoupon) => (
-                <UserCouponCard key={userCoupon.id} userCoupon={userCoupon} />
-              ))}
-            </View>
+            visible.map((userCoupon) => (
+              <UserCouponCard
+                key={userCoupon.id}
+                userCoupon={userCoupon}
+                onShowQr={setEnlarged}
+              />
+            ))
           )}
         </ScrollView>
       </SafeAreaView>
+
+      {enlarged ? (
+        <CouponRedeemedMoment
+          code={enlarged.code}
+          mode="wallet"
+          onDismiss={() => setEnlarged(null)}
+        />
+      ) : null}
     </Surface>
   );
 }

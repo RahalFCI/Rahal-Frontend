@@ -31,6 +31,7 @@ export type ErrorCode =
   | 'IMPOSSIBLE_TRAVEL'
   | 'LOCATION_SPOOFING_DETECTED'
   | 'PAYMENT_FAILED'
+  | 'BUSINESS_RULE'
   | 'UNKNOWN';
 
 interface ErrorMapping {
@@ -56,6 +57,7 @@ export const errorMap: Record<ErrorCode, ErrorMapping> = {
   IMPOSSIBLE_TRAVEL: { messageKey: 'places:error.impossibleTravel', tier: 'screen' },
   LOCATION_SPOOFING_DETECTED: { messageKey: 'places:error.locationSpoofingDetected', tier: 'screen' },
   PAYMENT_FAILED: { messageKey: 'payment:error.failed', tier: 'toast' },
+  BUSINESS_RULE: { messageKey: 'common:error.businessRule', tier: 'toast' },
   UNKNOWN: { messageKey: 'common:error.unknown', tier: 'screen' },
 };
 
@@ -108,7 +110,7 @@ const backendStringCodeMap: Record<string, ErrorCode> = {
   EmailNotVerified: 'EMAIL_NOT_VERIFIED',
   ProfileSetupRequired: 'PROFILE_SETUP_REQUIRED',
   InvalidOperation: 'VALIDATION_FAILED',
-  BusinessRuleViolation: 'UNKNOWN',
+  BusinessRuleViolation: 'BUSINESS_RULE',
   AlreadyCheckedIn: 'ALREADY_CHECKED_IN',
   UserNotAtLocation: 'USER_NOT_AT_LOCATION',
   ImpossibleTravel: 'IMPOSSIBLE_TRAVEL',

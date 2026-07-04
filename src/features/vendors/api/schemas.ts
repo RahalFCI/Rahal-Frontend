@@ -4,19 +4,13 @@
  */
 import { z } from 'zod';
 
-export const vendorAddressSchema = z.object({
-  addressLine: z.string().nullish(),
-  government: z.string().nullish(),
-  city: z.string().nullish(),
-  country: z.string().nullish(),
-});
-
 export const vendorSchema = z.object({
   userId: z.string(),
   displayName: z.string(),
   profilePictureUrl: z.string().nullish(),
   countryCode: z.string().nullish(),
-  address: vendorAddressSchema.nullish(),
+  /** GetVendorDto.Address is a single free-text line (e.g. "Zamalek, Cairo"). */
+  address: z.string().nullish(),
   addressUrl: z.string().nullish(),
   /** Map of DayOfWeek → "HH:mm-HH:mm" (or similar). Shape is backend-defined. */
   workingHours: z.record(z.string(), z.string()).nullish(),

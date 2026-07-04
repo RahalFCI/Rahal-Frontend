@@ -51,5 +51,24 @@
       "website": "Website",
       "save": "Save"
     }
+  },
+  "challenges": {
+    "eyebrow": "Place Challenges",
+    "empty": "No challenges are catalogued for this place yet.",
+    "unavailable": "Challenges could not be loaded right now.",
+    "xpReward": "{{xp}} XP",
+    "attempt": "Attempt",
+    "attemptEyebrow": "Challenge Attempt",
+    "checkInFirst": "Check in first",
+    "completed": "Completed",
+    "inReview": "In review",
+    "levelRecommended": "Level {{level}} recommended",
+    "takePhoto": "Take a photo",
+    "chooseFromLibrary": "Choose from library",
+    "submitPhoto": "Submit for review",
+    "submitting": "Submitting…",
+    "permissionDenied": "Camera or photo access was not granted.",
+    "approvedToast": "Challenge approved. Logged to your journal.",
+    "rejectedToast": "That photo didn't match the challenge. Try again."
   }
 }
