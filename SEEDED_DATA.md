@@ -1,105 +1,140 @@
 # Rahal — Seeded Demo Data
 
-> Generated 2026-06-30T10:11:07.068Z • Inserted directly into the Dockerized Postgres (`Rahal` DB).
-> All demo accounts share the password below and are email-confirmed (login works immediately).
+> **Regenerate/apply with one command** (from repo root, backend stack must be up):
+> `powershell -ExecutionPolicy Bypass -File scripts/seed/run.ps1`  ·  or  ·  `bash scripts/seed/run.sh`
+>
+> This wipes the app-domain tables in the Dockerized Postgres (`Rahal` DB) and reseeds
+> everything below, pushes the places into Meilisearch, and flushes Redis. Fully
+> **idempotent** — re-run any time; counts stay identical. Generator + full run guide:
+> `scripts/seed/`.
 
-## 🔑 Login credentials
+## 🔑 Login
 
 | Field | Value |
-|---|---|wwlayla.demo@rahal.test 
-| Password (all avccounts) | `Password123!` |
-ررر
-v
-### Explorer accounts (12)
+|---|---|
+| **Password (every account)** | `Password123!` |
+| Email confirmed | ✅ all accounts (login works immediately) |
+| Login endpoint | `POST /api/User/login` `{ "email", "password" }` |
 
-| # | Name | Email | Level | XP (cum) | Premium | Avatar |
-|---|------|-------|-------|----------|---------|--------|
-| 1 | Layla Hassan | `layla.demo@rahal.test` | 9 | 1240 | ✅ | [pic](https://i.pravatar.cc/400?img=7) |
-| 2 | Omar Farouk | `omar.demo@rahal.test` | 6 | 720 | — | [pic](https://i.pravatar.cc/400?img=14) |
-| 3 | Nour Adel | `nour.demo@rahal.test` | 4 | 410 | — | [pic](https://i.pravatar.cc/400?img=21) |
-| 4 | Youssef Mansour | `youssef.demo@rahal.test` | 12 | 1890 | ✅ | [pic](https://i.pravatar.cc/400?img=28) |
-| 5 | Mariam Saleh | `mariam.demo@rahal.test` | 3 | 260 | — | [pic](https://i.pravatar.cc/400?img=35) |
-| 6 | Karim Adel | `karim.demo@rahal.test` | 7 | 880 | — | [pic](https://i.pravatar.cc/400?img=42) |
-| 7 | Salma Ibrahim | `salma.demo@rahal.test` | 8 | 1010 | ✅ | [pic](https://i.pravatar.cc/400?img=49) |
-| 8 | Tarek Nabil | `tarek.demo@rahal.test` | 5 | 560 | — | [pic](https://i.pravatar.cc/400?img=56) |
-| 9 | Habiba Wael | `habiba.demo@rahal.test` | 4 | 380 | — | [pic](https://i.pravatar.cc/400?img=63) |
-| 10 | Ali Mostafa | `ali.demo@rahal.test` | 11 | 1650 | ✅ | [pic](https://i.pravatar.cc/400?img=0) |
-| 11 | Dina Kamal | `dina.demo@rahal.test` | 5 | 540 | — | [pic](https://i.pravatar.cc/400?img=7) |
-| 12 | Hany Sobhy | `hany.demo@rahal.test` | 6 | 700 | — | [pic](https://i.pravatar.cc/400?img=14) |
+Verified live: Explorer, Vendor, and Admin accounts all return a valid JWT.
 
-### Vendor accounts (4)
+### Explorer accounts (20)
 
-| # | Name | Email | Category | Address |
-|---|------|-------|----------|---------|
-| 1 | Sahara Bean Café | `sahara.vendor@rahal.test` | Cafes & Eateries | Maadi, Cairo |
-| 2 | Nile Pearl Cruises | `nile.vendor@rahal.test` | Tours & Cruises | Aswan Corniche |
-| 3 | Khan Relics Bazaar | `khan.vendor@rahal.test` | Shops & Bazaars | Khan el-Khalili, Cairo |
-| 4 | Red Sea Divers Co. | `red.vendor@rahal.test` | Dive & Adventure | Dahab, South Sinai |
+Level is derived on the frontend as `floor(cumXp / 1000) + 1`.
 
-## 🗺️ Places (20)
+| # | Name | Email | Level | Cum. XP | Premium |
+|---|------|-------|-------|---------|---------|
+| 1 | Layla Hassan | `layla.demo@rahal.test` | 4 | 3420 | ✅ |
+| 2 | Omar Farouk | `omar.demo@rahal.test` | 3 | 2180 | ✅ |
+| 3 | Nour Adel | `nour.demo@rahal.test` | 1 | 640 | — |
+| 4 | Youssef Mansour | `youssef.demo@rahal.test` | 6 | 5210 | ✅ |
+| 5 | Mariam Saleh | `mariam.demo@rahal.test` | 1 | 410 | — |
+| 6 | Karim Adel | `karim.demo@rahal.test` | 2 | 1890 | — |
+| 7 | Salma Ibrahim | `salma.demo@rahal.test` | 3 | 2760 | ✅ |
+| 8 | Tarek Nabil | `tarek.demo@rahal.test` | 1 | 980 | — |
+| 9 | Habiba Wael | `habiba.demo@rahal.test` | 1 | 720 | — |
+| 10 | Ali Mostafa | `ali.demo@rahal.test` | 5 | 4560 | ✅ |
+| 11 | Dina Kamal | `dina.demo@rahal.test` | 2 | 1310 | — |
+| 12 | Hany Sobhy | `hany.demo@rahal.test` | 2 | 1620 | — |
+| 13 | Farida Ashraf | `farida.demo@rahal.test` | 4 | 3050 | ✅ |
+| 14 | Seif Gamal | `seif.demo@rahal.test` | 1 | 250 | — |
+| 15 | Rana Sherif | `rana.demo@rahal.test` | 3 | 2440 | ✅ |
+| 16 | Mostafa Zaki | `mostafa.demo@rahal.test` | 1 | 890 | — |
+| 17 | Yasmin Fouad | `yasmin.demo@rahal.test` | 4 | 3980 | ✅ |
+| 18 | Khaled Reda | `khaled.demo@rahal.test` | 2 | 1150 | — |
+| 19 | Aya Magdy | `aya.demo@rahal.test` | 1 | 560 | — |
+| 20 | Amir Talaat | `amir.demo@rahal.test` | 3 | 2010 | — |
 
-Each place has 2 photos. Categories reuse the existing seeded `PlaceCategories`.
+> **Recommended demo login: `layla.demo@rahal.test`** — premium, high XP, dense
+> follow graph (full feed), and holds wallet coupons. `youssef.demo@rahal.test` is
+> the highest level (6) for showing the level display.
 
-| # | Name | Governorate | Lat, Lng |
-|---|------|-------------|----------|
-| 1 | Temple of Hatshepsut | Luxor | 25.738, 32.6065 |
-| 2 | Colossi of Memnon | Luxor | 25.7206, 32.6105 |
-| 3 | Temple of Horus (Edfu) | Aswan | 24.9779, 32.8732 |
-| 4 | Kom Ombo Temple | Aswan | 24.4522, 32.9281 |
-| 5 | Unfinished Obelisk | Aswan | 24.0784, 32.8956 |
-| 6 | Aswan High Dam | Aswan | 23.9707, 32.8773 |
-| 7 | Nubian Museum | Aswan | 24.0833, 32.8997 |
-| 8 | Saint Catherine's Monastery | South Sinai | 28.5559, 33.976 |
-| 9 | Mount Sinai | South Sinai | 28.5394, 33.975 |
-| 10 | Ras Muhammad National Park | South Sinai | 27.7333, 34.25 |
-| 11 | Cairo Tower | Cairo | 30.0459, 31.2243 |
-| 12 | Mosque of Ibn Tulun | Cairo | 30.0287, 31.2497 |
-| 13 | Sultan Hassan Mosque | Cairo | 30.0322, 31.2562 |
-| 14 | Al-Azhar Park | Cairo | 30.0405, 31.2645 |
-| 15 | Wadi El Rayan | Faiyum | 29.2, 30.4167 |
-| 16 | Wadi Al-Hitan (Whale Valley) | Faiyum | 29.2667, 30.0417 |
-| 17 | Montaza Palace | Alexandria | 31.2887, 30.0156 |
-| 18 | Catacombs of Kom El Shoqafa | Alexandria | 31.1782, 29.8923 |
-| 19 | Nubian Village (Gharb Soheil) | Aswan | 24.0469, 32.879 |
-| 20 | El Gouna Marina | Red Sea | 27.3954, 33.6783 |
+### Vendor accounts (5)
 
-## 🗺️ Additional places (2026-07-03, `scripts/more_places_and_challenges.sql`)
+| # | Name | Email | Address |
+|---|------|-------|---------|
+| 1 | Sahara Bean Café | `sahara.vendor@rahal.test` | Road 9, Maadi, Cairo |
+| 2 | Nile Pearl Cruises | `nile.vendor@rahal.test` | Corniche El Nil, Aswan |
+| 3 | Khan Relics Bazaar | `khan.vendor@rahal.test` | Khan el-Khalili, Islamic Cairo |
+| 4 | Red Sea Divers Co. | `red.vendor@rahal.test` | Masbat Bay, Dahab, South Sinai |
+| 5 | Luxor Balloon Rides | `luxor.vendor@rahal.test` | West Bank, Luxor |
 
-6 new places added, plus challenges backfilled for every place that had none (135 new challenges total across 46 places — every place now has at least 2-3).
+Each vendor offers 2 coupons (10 total) and is linked to a nearby Place via a `VendorBranch`.
 
-| # | Name | Governorate | Lat, Lng | Geofence |
-|---|------|-------------|----------|----------|
-| 1 | Dendera Temple Complex | Qena | 26.1417, 32.6704 | 500m |
-| 2 | Abydos Temple of Seti I | Sohag | 26.1844, 31.9192 | 500m |
-| 3 | Lake Qarun | Faiyum | 29.4667, 30.5833 | 300m |
-| 4 | Marsa Alam Coral Reefs | Red Sea | 25.0670, 34.8930 | 300m |
-| 5 | Ras El Bar Corniche | Damietta | 31.5167, 31.6500 | 250m |
-| 6 | **Baron Empain Palace** | Cairo (Heliopolis) | 30.0904, 31.3211 | 200m |
+### Admin accounts (3)
 
-**Baron Empain Palace is the new `DEV_PINNED_LOCATION`** (`src/features/gamification/hooks/useCheckIn.ts`) — it has never been checked into, so it's the place to simulate a successful check-in against. Any other place's geofence will now correctly reject a check-in attempt.
+| # | Name | Email |
+|---|------|-------|
+| 1 | Rahal Admin | `admin@rahal.test` |
+| 2 | Content Moderator | `moderator@rahal.test` |
+| 3 | Ops Curator | `curator@rahal.test` |
+
+## 🎯 Check-in demo place (important)
+
+**Baron Empain Palace** (Cairo/Heliopolis, `lat 30.0904, lng 31.3211`, geofence 200m,
+place id `51ace000-0000-4000-8000-00000000000a`) is deliberately seeded with **zero
+check-ins**. It is the frontend `DEV_PINNED_LOCATION` — use it to demo a live successful
+check-in + XP award + level-up. Every other place already has check-ins, and its geofence
+will correctly reject a spoofed attempt.
 
 ## 📊 Volume summary
 
-| Entity | Count |
-|---|---|
-| Explorer users + profiles + stats | 12 |
-| Vendor users + profiles | 4 |
-| Vendor categories | 4 |
-| Places | 20 |
-| Place photos | 40 |
-| Check-ins (Verified) | 33 |
-| Place reviews | 12 |
-| Posts | 22 |
-| Post→place tags | 12 |
-| Comments (incl. replies) | 51 |
-| Likes | 125 |
-| Follows (edges) | 80 |
+| Entity | Count | | Entity | Count |
+|---|---|---|---|---|
+| Explorers (users+profiles+stats) | 20 | | Posts | 49 |
+| Vendors (users+profiles) | 5 | | Comments (incl. replies) | 130 |
+| Admins | 3 | | Likes | 472 |
+| Places (real Egyptian sites) | 35 | | Follows (edges) | 143 |
+| Place photos | 70 | | Coupons | 10 |
+| Challenges (photo, 2–3/place) | 90 | | Wallet coupons (claimed/redeemed/expired) | 26 |
+| Check-ins (Verified) | 130 | | Subscriptions (premium) | 8 |
+| Completed challenge attempts | 46 | | Travel plans | 5 |
+| Place reviews (verified) | 38 | | Payments (Stripe) | 4 |
+| XP transactions | 176 | | Notifications | 114 |
 
-## 🧩 Notes
+## 🧩 What each screen will show
 
-- **Profile pictures**: explorer avatars use `i.pravatar.cc` (real faces); vendor/place/post images use `picsum.photos`. The app passes absolute `http(s)` URLs through unchanged (`resolveMediaUrl`).
-- **Avatars in the social feed** render as initials by design; profile pictures show on the explorer/vendor **profile** screens.
-- **Feed** = posts from people you follow (+ your own). The follow graph is dense (~60% edges), so every demo account has a full feed.
-- **Check-ins** are pre-validated (`ValidationStatus = Verified`) with coordinates matching the place, bypassing geo-fencing.
-- Redis was flushed after seeding so feed/like/follow counters rehydrate from the database.
-- IDs are deterministic (prefixes: explorers `e0a…`, vendors `d0a…`, places `f1a…`, posts `a0a…`, comments `b0b…`).
+- **Discover / Map** — 35 places across Giza, Cairo, Luxor, Aswan, Sinai, Alexandria,
+  Faiyum, the Western Desert & Red Sea, with real coordinates, photos, challenges & reviews.
+- **Search** — full-text search works (places pushed into Meilisearch by the runner).
+- **Profile / Gamification** — XP, levels, streaks, check-in & challenge counts per explorer.
+- **Feed / Social** — posts (with media), threaded comments, likes, and a dense follow graph
+  so every account has a populated feed. Author names & counts resolve correctly.
+- **Coupons** — 10 vendor coupons grouped by vendor; wallet has pending/redeemed/expired rows.
+- **Premium / Payments** — premium explorers have active subscriptions; Stripe payment rows exist.
+- **Notifications** — like / comment / follow notifications, mixed read/unread.
+
+## ⚠️ Gotchas the seed already handles (do NOT re-fix these)
+
+These bit us during authoring; the script and runner already account for them:
+
+1. **UserType enum is 1-based** (renumbered 2026-07-03): **Explorer=1, Admin=2, Vendor=3.**
+   Getting this wrong makes feed authors show as "Unknown User". The seed pins it correctly
+   and also inserts the matching `AspNetUserRoles` row per user.
+2. **Password hash is copied verbatim** from a known-good user (ASP.NET Identity v3 PBKDF2).
+   It is `Password123!`. Don't try to compute a new hash — reuse the constant in `generate.js`.
+3. **Enum column encoding differs by column type.** TEXT enum columns store the **.NET name**
+   (`'FixedAmount'`, `'Percentage'`, `'Claimed'`, `'Redeemed'`, `'Active'`, `'Succeeded'`,
+   `'Visa'`, `'Xp'`); INT enum columns store the **ordinal** (CheckIn `ValidationStatus`
+   Verified=**1**; Challenge attempt Approved=**1**; XP source CheckIn=**0**, Challenge=**2**;
+   Challenge Difficulty Easy/Medium/Hard=0/1/2; Type Photo=0).
+4. **Meilisearch is NOT fed by direct SQL.** The backend only indexes a place via a
+   `PlaceCreatedEvent` domain handler (never fires on a raw INSERT), and there is **no
+   bulk-reindex endpoint**. The runner pushes `scripts/seed/meili_places.json` straight to
+   Meilisearch (`localhost:7700`, key `masterKey123`, index `placesearchdocument`). Skip this
+   step and search returns 0 results.
+5. **Flush Redis after seeding.** Like/follow/feed counters are cached in Redis; without a
+   `FLUSHALL` they show stale zeros. The runner does this last.
+6. **Coupon.VendorId is the vendor's *user id*** (`d0a…`), because `VendorProfiles` PK = UserId
+   and the vendor-side redeem matches on the login user id. Don't point it at a category or a place.
+7. **UUIDs must be valid hex.** Deterministic id prefixes only use `0-9a-f` (an early draft used
+   `h/v/m` and Postgres rejected them). Keep prefixes hex if you extend the generator.
+8. **`gen_random_uuid()` requires pgcrypto** — available by default on this Postgres 13 image;
+   used only for security stamps and payment operation ids.
+
+## 🔁 Regenerating / tuning
+
+- Volumes, names, XP, and premium flags live at the top of `scripts/seed/generate.js`.
+- `node scripts/seed/generate.js` rewrites `rahal_demo_seed.sql`, `meili_places.json`, and
+  `summary.json`. Then re-run `run.ps1` / `run.sh` to apply.
+- The seeded PRNG is fixed (`_s = 1337`), so regeneration is reproducible.

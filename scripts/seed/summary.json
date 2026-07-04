@@ -1,0 +1,214 @@
+{
+  "password": "Password123!",
+  "counts": {
+    "explorers": 20,
+    "vendors": 5,
+    "admins": 3,
+    "places": 35,
+    "photos": 70,
+    "challenges": 90,
+    "checkins": 130,
+    "checkinChallenges": 46,
+    "reviews": 38,
+    "posts": 49,
+    "comments": 130,
+    "likes": 472,
+    "follows": 143,
+    "coupons": 10,
+    "userCoupons": 26,
+    "subscriptions": 8,
+    "travelPlans": 5,
+    "payments": 4,
+    "notifications": 114
+  },
+  "pinnedPlace": {
+    "name": "Baron Empain Palace",
+    "lat": 30.0904,
+    "lng": 31.3211,
+    "geofence": 200,
+    "id": "51ace000-0000-4000-8000-00000000000a"
+  },
+  "explorers": [
+    {
+      "name": "Layla Hassan",
+      "email": "layla.demo@rahal.test",
+      "level": 4,
+      "cumXp": 3420,
+      "premium": true
+    },
+    {
+      "name": "Omar Farouk",
+      "email": "omar.demo@rahal.test",
+      "level": 3,
+      "cumXp": 2180,
+      "premium": true
+    },
+    {
+      "name": "Nour Adel",
+      "email": "nour.demo@rahal.test",
+      "level": 1,
+      "cumXp": 640,
+      "premium": false
+    },
+    {
+      "name": "Youssef Mansour",
+      "email": "youssef.demo@rahal.test",
+      "level": 6,
+      "cumXp": 5210,
+      "premium": true
+    },
+    {
+      "name": "Mariam Saleh",
+      "email": "mariam.demo@rahal.test",
+      "level": 1,
+      "cumXp": 410,
+      "premium": false
+    },
+    {
+      "name": "Karim Adel",
+      "email": "karim.demo@rahal.test",
+      "level": 2,
+      "cumXp": 1890,
+      "premium": false
+    },
+    {
+      "name": "Salma Ibrahim",
+      "email": "salma.demo@rahal.test",
+      "level": 3,
+      "cumXp": 2760,
+      "premium": true
+    },
+    {
+      "name": "Tarek Nabil",
+      "email": "tarek.demo@rahal.test",
+      "level": 1,
+      "cumXp": 980,
+      "premium": false
+    },
+    {
+      "name": "Habiba Wael",
+      "email": "habiba.demo@rahal.test",
+      "level": 1,
+      "cumXp": 720,
+      "premium": false
+    },
+    {
+      "name": "Ali Mostafa",
+      "email": "ali.demo@rahal.test",
+      "level": 5,
+      "cumXp": 4560,
+      "premium": true
+    },
+    {
+      "name": "Dina Kamal",
+      "email": "dina.demo@rahal.test",
+      "level": 2,
+      "cumXp": 1310,
+      "premium": false
+    },
+    {
+      "name": "Hany Sobhy",
+      "email": "hany.demo@rahal.test",
+      "level": 2,
+      "cumXp": 1620,
+      "premium": false
+    },
+    {
+      "name": "Farida Ashraf",
+      "email": "farida.demo@rahal.test",
+      "level": 4,
+      "cumXp": 3050,
+      "premium": true
+    },
+    {
+      "name": "Seif Gamal",
+      "email": "seif.demo@rahal.test",
+      "level": 1,
+      "cumXp": 250,
+      "premium": false
+    },
+    {
+      "name": "Rana Sherif",
+      "email": "rana.demo@rahal.test",
+      "level": 3,
+      "cumXp": 2440,
+      "premium": true
+    },
+    {
+      "name": "Mostafa Zaki",
+      "email": "mostafa.demo@rahal.test",
+      "level": 1,
+      "cumXp": 890,
+      "premium": false
+    },
+    {
+      "name": "Yasmin Fouad",
+      "email": "yasmin.demo@rahal.test",
+      "level": 4,
+      "cumXp": 3980,
+      "premium": true
+    },
+    {
+      "name": "Khaled Reda",
+      "email": "khaled.demo@rahal.test",
+      "level": 2,
+      "cumXp": 1150,
+      "premium": false
+    },
+    {
+      "name": "Aya Magdy",
+      "email": "aya.demo@rahal.test",
+      "level": 1,
+      "cumXp": 560,
+      "premium": false
+    },
+    {
+      "name": "Amir Talaat",
+      "email": "amir.demo@rahal.test",
+      "level": 3,
+      "cumXp": 2010,
+      "premium": false
+    }
+  ],
+  "vendors": [
+    {
+      "name": "Sahara Bean Café",
+      "email": "sahara.vendor@rahal.test",
+      "addr": "Road 9, Maadi, Cairo"
+    },
+    {
+      "name": "Nile Pearl Cruises",
+      "email": "nile.vendor@rahal.test",
+      "addr": "Corniche El Nil, Aswan"
+    },
+    {
+      "name": "Khan Relics Bazaar",
+      "email": "khan.vendor@rahal.test",
+      "addr": "Khan el-Khalili, Islamic Cairo"
+    },
+    {
+      "name": "Red Sea Divers Co.",
+      "email": "red.vendor@rahal.test",
+      "addr": "Masbat Bay, Dahab, South Sinai"
+    },
+    {
+      "name": "Luxor Balloon Rides",
+      "email": "luxor.vendor@rahal.test",
+      "addr": "West Bank, Luxor"
+    }
+  ],
+  "admins": [
+    {
+      "name": "Rahal Admin",
+      "email": "admin@rahal.test"
+    },
+    {
+      "name": "Content Moderator",
+      "email": "moderator@rahal.test"
+    },
+    {
+      "name": "Ops Curator",
+      "email": "curator@rahal.test"
+    }
+  ]
+}
